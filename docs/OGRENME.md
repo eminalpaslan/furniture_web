@@ -113,6 +113,7 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | `CLAUDE.md` | Claude'un çalışma kuralları (anayasa). | başlangıç |
 | `ROADMAP.md` | Bütün görevler ve kabul kriterleri. `[x]` = bitti. | başlangıç |
 | `BASLARKEN.md` | Senin için kısa başlangıç kılavuzu. | başlangıç |
+| `README.md` | Projenin "kapı tabelası": gereksinimler, sıfırdan kurulum adımları, komutlar, portlar, sık sorunlar. | F0.9 |
 | `package.json` | Kök projenin kimlik kartı: hangi pnpm/Node sürümü, hangi komutlar (`scripts`), hangi araçlar. | F0.1 |
 | `pnpm-workspace.yaml` | pnpm'e "şu klasörlerdeki her şey bu projenin parçası" der; ayrıca pnpm ayarları. | F0.1 |
 | `pnpm-lock.yaml` | Kilit dosyası — otomatik üretilir, **elle düzenlenmez**, commit'lenir. | F0.1 |
@@ -167,6 +168,7 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | `next.config.ts` | Next.js ayarları. Açılışta kökteki `.env`'i okur ve ortamı doğrular (F0.5). | F0.4 |
 | `env.ts` | Bu uygulamanın ihtiyaç duyduğu ortam değişkenlerinin şeması (şimdilik `API_URL`). | F0.5 |
 | `env.test.ts`, `vitest.config.ts` | Şema testleri ve test ayarı. | F0.5 |
+| `next.config.test.ts` | `next.config.ts`'in `API_URL` eksikken uygulamayı gerçekten kapattığını test eder. | F0.9 |
 | `postcss.config.mjs` | CSS işleme hattı; Tailwind eklentisini çalıştırır. | F0.4 |
 | `tsconfig.json`, `eslint.config.js` | Ortak ayarları (`packages/config`) miras alan kısa dosyalar. | F0.4 |
 | `.next/`, `next-env.d.ts` | Next'in ürettiği derleme çıktısı ve tip dosyası — **otomatik**, git'e girmez. | F0.4 |
@@ -187,6 +189,7 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | `vitest.config.ts` | İki test projesi: `unit` (hızlı) ve `integration` (Docker ister); kapsam (coverage) ayarı. | F0.6 |
 | `tsconfig.build.json` | `nest build`'in kullandığı derleme ayarı (test dosyalarını dışarıda bırakır). | F0.5 |
 | `src/main.worker.ts` | **İşçi (worker)** sürecinin giriş noktası: e-posta gönderme, arama indeksleme gibi arka plan işleri burada çalışacak (F2.6). | F0.4 |
+| `src/run-bootstrap.ts` | Açılışta bir hata olursa (ör. port dolu) bunu düzgün log'layıp programı kapatan küçük yardımcı. | F0.9 |
 | `src/app.module.ts` | API'nin **kök modülü**: bütün özellik modüllerini (health, ileride catalog, cart, orders…) bir araya getirir. | F0.4 |
 | `src/worker.module.ts` | İşçinin kök modülü. | F0.4 |
 | `src/health/health.controller.ts` | `GET /health/live` adresi: "API ayakta mı?" sorusuna `{"status":"ok"}` cevabı. | F0.4 |
@@ -754,3 +757,56 @@ pnpm lint:ci        # iş akışı dosyasını denetle (Docker açık olmalı)
 ```
 Sonra `.github/workflows/ci.yml` dosyasını aç ve adımları yukarıdaki listeyle karşılaştırarak oku — her `run:` satırı senin de
 terminalde çalıştırabileceğin bir komut.
+
+### F0.9 · Faz denetimi ve README (2026-11-12)
+
+**Ne yaptık?**
+1. `README.md` yazdık: projeyi hiç görmemiş biri sıfırdan nasıl kurar?
+2. README'yi **temiz bir kopyada** (git clone) harfiyen uyguladık.
+3. Fazın tamamını, kodu yazan ben değil **bağımsız bir alt ajan** (ayrı bir Claude) denetledi; bulguları düzelttik.
+
+**Temiz kopya testi neden önemli? — 3 gizli sorun yakaladı:**
+1. `pnpm install` temiz kopyada **hiç çalışmadı**. pnpm 12, paketlerin kurulurken kendi kodlarını çalıştırmasını onaysız
+   yasaklıyor (güvenlik özelliği). Bizim klasörde paketler tek tek eklendiği için bu fark edilmemişti. Üç paketin (Docker
+   bağlantı kütüphanesinin isteğe bağlı parçaları) betiklerini **bilerek reddettik** — çalışmalarına gerek yok.
+2. Windows'un 260 karakterlik dosya yolu sınırı: test kopyasını çok derin bir klasöre koyunca pnpm dosya yazamadı.
+   Proje hatası değil, ama README'ye "kısa bir klasöre klonla" uyarısı ekledik.
+3. README'de yazdığımız RustFS konsol adresi yanlıştı (`/rustfs/console/` eki gerekiyordu).
+→ Ders: **"Bende çalışıyor" yetmez.** Kendi bilgisayarındaki birikmiş durum (önceden derlenmiş dosyalar, adım adım kurulum)
+hataları gizler. Temiz ortamda deneme bunları ortaya çıkarır.
+
+**Bağımsız denetim neden?** Kendi yazdığın işi kendin notlarsan körlüklerini de taşırsın. Denetçi en önemli şunları buldu:
+- **Yarış durumu (race condition):** `pnpm lint`, `utils` paketi derlenmeden başlayabiliyordu; temiz kopyada kırılıyordu.
+  `pnpm verify`'da tesadüfen sıra doğru düştüğü için görmemiştik. Turborepo'ya "lint'ten önce bağımlılıkları derle" dedik.
+- **Güvenlik:** Docker servisleri bilgisayarın **bütün ağ bağlantılarına** açıktı; aynı Wi-Fi'daki biri, herkesin bildiği
+  geliştirme şifresiyle veritabanına bağlanabilirdi. Artık yalnızca `127.0.0.1` (sadece senin bilgisayarın).
+- **En az yetki:** Vitrin uygulaması kök `.env`'in tamamını, yani veritabanı şifresini de okuyordu. Artık yalnızca kendi
+  ihtiyacı olan `API_URL`'yi alıyor (ve bunu bir test garanti ediyor).
+- **Kural boşlukları:** Renk/ölçü yasağı Tailwind'in yeni yazım biçimlerini (`bg-(--renk)`) kaçırıyordu; genişlettik ve
+  deneme dosyasıyla 7 yasak örneğin hepsinin yakalandığını, 5 izinli örneğin hiçbirinin yakalanmadığını gördük.
+- **Hata yolları:** Port doluyken API çirkin bir hata yığınıyla düşüyordu. Önce bunu yakalayan **kırmızı** bir test yazdık,
+  sonra düzelttik ve testin **yeşile** döndüğünü gördük (test önce, kod sonra).
+- Hemen yapılması gerekmeyenleri **unutulmasın diye yol haritasına görev olarak ekledik**: F1.1a, F2.1a, F2.3a, F4.1a.
+
+**Öğrenilecek kavramlar:** temiz ortam testi, yarış durumu, en az yetki ilkesi, ağ arayüzü (`0.0.0.0` ve `127.0.0.1` farkı),
+bağımsız kod incelemesi, "önce kırmızı test" (TDD).
+
+---
+
+## 🎯 Faz 0 özeti — elimizde ne var?
+
+Henüz müşterinin göreceği bir sayfa yok — ama sitenin üzerine inşa edileceği **zemin** hazır:
+
+| Neye sahibiz | Ne işe yarar |
+|---|---|
+| Monorepo (3 uygulama + 4 paket) | Vitrin, panel ve API aynı depoda, ortak kodu paylaşıyor |
+| Sürümleri doğrulanmış, kilitli araçlar | Herkes, her zaman aynı kurulumu alır |
+| Katı TypeScript + lint + biçimlendirme + git kancaları | Hatalar kod çalışmadan, commit'ten önce yakalanır |
+| Lokal servisler (Docker) | Veritabanı, Redis, arama, dosya deposu, e-posta — tek komutla |
+| Ortam değişkeni doğrulaması | Yanlış ayarla uygulama hiç açılmaz, neyin yanlış olduğunu söyler |
+| Test altyapısı (birim, entegrasyon, e2e, erişilebilirlik) | 45 otomatik test + 7 tarayıcı testi |
+| `ui:snap` | Arayüz görevlerinde ekran görüntüsüyle öz-kontrol |
+| CI | GitHub'a gönderilince her şey otomatik denetlenir |
+
+**Sıradaki faz (F1 — tasarım sistemi):** renkler, yazı tipleri, butonlar, formlar, menüler… sitenin "görünüşünün" yapı taşları.
+İlk kez ekranda gerçekten bir şeyler göreceğiz.

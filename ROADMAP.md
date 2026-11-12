@@ -82,7 +82,7 @@
 - **KK:** İş akışı YAML'ı `actionlint` ile geçerli; yerelde `act` yoksa en azından adımlar `pnpm` scriptleriyle birebir aynı.
 - **Doğrula:** `actionlint` (yüklü değilse kur) çıktısı temiz.
 
-### [ ] F0.9 Faz denetimi
+### [x] F0.9 Faz denetimi
 - **Bağımlılık:** F0.1–F0.8
 - **Yap:** `/faz-denetimi`. README.md'ye kurulum talimatı (sıfırdan çalıştırma adımları).
 - **KK:** README'deki adımlar temiz klonda birebir uygulanınca proje ayağa kalkıyor.

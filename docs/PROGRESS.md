@@ -4,10 +4,11 @@
 > Bağlam sıkıştırılsa bile buradan kalınan yere dönülebilmelidir.
 
 ## Mevcut durum
-- **Faz:** F0 — devam ediyor
-- **Son tamamlanan görev:** F0.8
-- **`pnpm verify` son durumu:** ✔ 2026-11-12 — 22/22 görev, 38/38 test (utils 10, api 14 [unit 8 + entegrasyon 6], web 3, admin 3,
-  e2e/ui-snap 8); `pnpm e2e` 7/7, `pnpm e2e:a11y` 3/3. Entegrasyon testleri için Docker Desktop açık olmalı.
+- **Faz:** F0 ✔ tamamlandı (faz denetimi geçti) → sıradaki F1 (tasarım sistemi), ilk görev **F1.1**
+- **Son tamamlanan görev:** F0.9
+- **`pnpm verify` son durumu:** ✔ 2026-11-12 (`--force`, önbelleksiz) — 22/22 görev, 45/45 test (utils 11, api 15 [unit 8 +
+  entegrasyon 7], web 5, admin 5, e2e/ui-snap 8); `pnpm e2e` 7/7, `pnpm e2e:a11y` 3/3. Entegrasyon testleri için Docker açık olmalı.
+- **Bilinen engellemeyen a11y bulgusu:** boş sayfalarda `page-has-heading-one` (orta) — sayfalar içerik alınca (F4.4, F8.1) kapanır.
 - **`ui:snap` kullanımı:** uygulama çalışıyor olmalı (`pnpm dev` veya `pnpm --filter @mobilya/web start`). Git Bash'te
   `MSYS_NO_PATHCONV=1 pnpm ui:snap / --states hover,focus,menu` (yoksa `/` Windows yoluna çevrilir). Panel için `--base http://localhost:3001`.
 - **Lokal kurulum notu:** `pnpm verify` ve `pnpm dev` kökte `.env` ister (`cp .env.example .env`); yoksa web/admin build'i
@@ -20,20 +21,16 @@
 ## Aktif görev
 > Görev başlarken doldurulur, bitince temizlenir.
 
-- **ID / başlık:** F0.9 Faz denetimi (README yazıldı ve temiz klonda denendi; bağımsız denetim raporu alındı)
-- **Plan (denetim bulguları):**
-  1. turbo `lint` → `dependsOn: ["^build"]`; `globalDependencies: [".env"]`.
-  2. docker-compose portları `127.0.0.1`'e bağlanır.
-  3. Token lint kuralı: Tailwind v4 `(--x)`, `[özellik:değer]`, sondaki `!`; `.ts/.js` dosyalarına da uygulanır.
-  4. Next: kök `.env`'den yalnızca şemadaki değişkenler yüklenir; `next.config` kapanma davranışı testli.
-  5. API/worker `bootstrap` hatası → log + exit 1. a11y: best-practice etiketi + engellemeyen bulgular rapora; CI `failOnFlakyTests`.
-  6. Belgeler: ADR (allowBuilds), ROADMAP'e ertelenenler, README, STACK, .env.example yorumları, OGRENME. Sonra tüm kapılar + temiz klonda `pnpm lint`.
+- **ID / başlık:** —
+- **Plan:**
+  1. —
 - **Notlar / riskler:** —
 
 ## Sonraki görevlere devredilen notlar
-- CI henüz GitHub'da hiç çalışmadı (depo uzak sunucuya gönderilmedi). İlk push'tan sonra Actions sekmesinde sonucu kontrol et;
-  F12 öncesi staging/production için uygulama değişkenleri `.env` yerine ortamdan gelecek → o zaman turbo `env`/`passThroughEnv` gözden geçirilir.
-- Domain modülleri (pricing, cart, …) geldikçe `apps/api/vitest.config.ts` → `coverage.thresholds` ile ≥ %85 eşik (CLAUDE.md §4.1 G3).
+- CI henüz GitHub'da hiç çalışmadı (depo uzak sunucuya gönderilmedi) → F0 çıkış kapısındaki "CI yeşil" maddesi yerel `CI=1`
+  provasıyla karşılandı; ilk push'tan sonra Actions sekmesinde gerçek sonuç kontrol edilecek (Kullanıcıdan beklenenler #13).
+  F12 öncesi staging/production için uygulama değişkenleri `.env` yerine ortamdan gelecek → turbo `env`/`passThroughEnv` gözden geçirilir.
+- Kapsam eşikleri → ROADMAP F2.3a. `/v1` öneki + üretim env sertleştirme → F2.1a. CSS token denetimi → F1.1a. `server-only` env → F4.1a.
 - F2.1: API yanıtlarında `X-Powered-By: Express` var → helmet ile kaldırılacak (zaten F2.1 kapsamında).
 - Windows notu: `pnpm dev` arka planda durdurulunca node alt süreçleri 3000/3001/4000'i tutmaya devam edebiliyor → PID ile kapat.
 
@@ -73,6 +70,41 @@ _(yok)_
 > - Kanıt: `pnpm verify` → yeşil (typecheck 0, lint 0, test 12/12, build OK)
 > - Görsel kontrol: (UI ise) `[rota] 10/10 ✔` veya bulgular
 > - Not: …
+
+### 2026-11-12 · F0.9 Faz denetimi — ✔ (F0 FAZ DENETİM RAPORU)
+**README:** `README.md` — gereksinimler, sıfırdan kurulum, beklenen adresler, komutlar, portlar, sık sorunlar.
+
+**Temiz klon testi (KK):** `git clone` → README adımları harfiyen.
+- Deneme 1: `pnpm install` → `ERR_PNPM_IGNORED_BUILDS` (ssh2, cpu-features, protobufjs) — ana klasörde görünmüyordu. → `allowBuilds`
+  ile reddedildi (DECISIONS). Ayrıca Windows MAX_PATH: uzun test yolunda (279 karakter) pnpm yazamadı → kısa yolla tekrar; README'ye uyarı.
+- Deneme 2: install ✔, `cp .env.example .env` ✔, `infra:up` ✔, `e2e:install` ✔, `verify` 22/22 ✔, `e2e` 7/7 ✔, `pnpm dev` → api/web/admin
+  200, Mailpit 200; RustFS konsolu kökte 403 → doğru adres `/rustfs/console/` (README ve OGRENME düzeltildi).
+- Deneme 3 (denetim düzeltmelerinden sonra): install ✔, **`pnpm lint` tek başına 11/11** ✔, verify 22/22 ✔, e2e 7/7 ✔.
+
+**Bağımsız denetim (alt ajan) — kriter tablosu özeti:** F0.1–F0.8'in tüm KK'ları ✔; denetçi 3 maddeyi ✘/? işaretledi:
+| Madde | Durum | Yapılan |
+|---|---|---|
+| F0.5 web/admin "uygulama kapanıyor" testi yok | ✘ → ✔ | `apps/{web,admin}/next.config.test.ts`: API_URL'siz açılış exit 1 + mesaj |
+| F0.9 temiz klonda `pnpm lint` kırılıyor | ✘ → ✔ | turbo `lint` `^build`'e bağlandı; temiz klonda 11/11 |
+| "CI yeşil" kanıtı | ? | Depo push edilmedi; yerel `CI=1` provası yeşil (F0.8). İlk push'ta doğrulanacak |
+
+**Bulgular ve sonuçları:**
+| # | Bulgu | Sonuç |
+|---|---|---|
+| 1 | turbo lint yarışı (temiz klon) | düzeltildi |
+| 2 | Docker portları 0.0.0.0'a açık, bilinen şifreler | düzeltildi: `127.0.0.1` |
+| 3 | Token lint boşlukları (v4 `(--x)`, `[p:v]`, `!`, `.ts` dosyaları) | düzeltildi (deneme dosyası: 7 yasak yakalandı, 5 serbest geçti); CSS → **F1.1a** |
+| 4 | Next env: tüm kök `.env` vitrine yükleniyor; `.env` önbellek girdisi değil; server-only yok | yalnızca şema anahtarları yükleniyor (testli); `globalDependencies: [.env]`; server-only → **F4.1a** |
+| 5 | `void bootstrap()` hataları ham; a11y orta bulgular görünmez; CI retry kararsızlığı gizler | `runBootstrap` (port dolu testi önce kırmızı, sonra yeşil); a11y best-practice + not; `failOnFlakyTests` |
+| 6 | `allowBuilds` için DECISIONS kaydı yok | eklendi |
+| 7 | Kapsam eşiği ROADMAP'e bağlı değil | **F2.3a** |
+| 8 | `ARCHITECTURE §4` `/v1` öneki yok | **F2.1a** (üretim env sertleştirmesiyle) |
+| 9 | `.env.example` compose değişkenleri açıklamasız; README'de `pnpm e2e` yok; STACK'te kaldırılmış paket satırı | düzeltildi |
+| 10 | Postgres imajı iki yerde | compose'a çapraz uyarı yorumu |
+
+- Kanıt (son durum, önbelleksiz): `pnpm verify --force` 22/22, `pnpm e2e` 7/7, `pnpm e2e:a11y` 3/3, `pnpm knip` ✔, `pnpm format:check` ✔,
+  `pnpm lint:ci` ✔, `docker compose ps` 5/5 healthy ve yalnızca 127.0.0.1.
+- **Faz çıkış kapısı:** `pnpm verify` ✔ · `pnpm e2e` ✔ · `pnpm ui:snap` ✔ · CI → yerel prova ✔ (GitHub'da çalıştırma kullanıcı deposuna bağlı).
 
 ### 2026-11-12 · F0.8 CI (GitHub Actions) — ✔
 - Yapılanlar: `.github/workflows/ci.yml` (PR + main push; checkout → Node(.nvmrc) → pnpm + önbellek → frozen install → `.env` →
