@@ -33,7 +33,7 @@ Bir e-ticaret sitesi tek bir program değil, birlikte çalışan birkaç program
                    │
      ┌─────────────┼──────────────┬──────────────┐
      ▼             ▼              ▼              ▼
- PostgreSQL      Redis       Meilisearch    MinIO (S3)
+ PostgreSQL      Redis       Meilisearch    RustFS (S3)
  (veritabanı)  (hızlı bellek, (arama motoru) (ürün görselleri)
                iş kuyruğu)
 ```
@@ -78,6 +78,15 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | **Staged** | `git add` ile commit'e hazırlanmış (sahneye alınmış) değişiklikler. |
 | **Conventional Commits** | Commit mesajı standardı: `tip(kapsam): açıklama`. Geçmişi okunur ve otomatik işlenebilir kılar. |
 | **Ölü kod** | Hiçbir yerden çağrılmayan, silinebilecek kod veya kullanılmayan bağımlılık. |
+| **Docker / konteyner** | Bir programı, ihtiyaç duyduğu her şeyle birlikte paketleyip bilgisayarından yalıtılmış bir "kutu"da çalıştırma. Postgres'i bilgisayarına kurmadan çalıştırırsın. |
+| **İmaj (image)** | Konteynerin kalıbı (ör. `postgres:18.6-alpine3.24`). Konteyner = imajdan çalıştırılmış örnek. |
+| **Docker Compose** | Birden çok konteyneri tek bir dosyayla (`docker-compose.yml`) tanımlayıp birlikte başlatma aracı. |
+| **Volume** | Konteyner silinse bile verinin saklandığı disk alanı. Silinirse veri de gider (`infra:reset` bunu yapar). |
+| **Port** | Bir programın ağda dinlediği "kapı numarası". `15432:5432` = bilgisayarının 15432 kapısı → konteynerin 5432 kapısı. |
+| **Healthcheck** | Docker'ın konteynere düzenli olarak "iyi misin?" diye sorduğu komut. Cevap olumluysa durum `healthy` olur. |
+| **Idempotent** | Bir işlemi 1 kez de yapsan 10 kez de yapsan sonuç aynı. (Bucket varsa tekrar oluşturmaya çalışmaz.) |
+| **S3 / bucket** | Amazon'un dosya depolama standardı. Dosyalar "bucket" denen kovalarda durur. Ürün görselleri burada saklanacak. |
+| **Arşivlenmiş depo** | Sahibinin geliştirmeyi durdurduğu, artık güncelleme almayan açık kaynak proje. Güvenlik açısından kullanılmamalı. |
 
 ---
 
@@ -108,6 +117,7 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | `.husky/commit-msg` | Commit mesajı yazılınca çalışan kanca → `commitlint` ile mesajı denetler. | F0.2 |
 | `.prettierignore` | Prettier'ın dokunmayacağı dosyalar (kilit dosyası ve Markdown belgeleri). | F0.2 |
 | `knip.json` | Knip'e (ölü kod avcısı) projenin giriş noktalarını söyler. | F0.2 |
+| `docker-compose.yml` | Lokal servislerin tarifi: veritabanı, Redis, arama motoru, dosya deposu, e-posta yakalayıcı. | F0.3 |
 
 ### `packages/config` içi
 
@@ -221,6 +231,32 @@ git commit -m "..."
 - **Ne:** Hiç kullanılmayan dosyaları, export'ları ve `package.json`'da yazılı ama kullanılmayan bağımlılıkları bulur.
 - **Komut:** `pnpm knip`. Proje büyüdükçe "unutulmuş çöp" birikmesini önler.
 
+### Docker Compose ve lokal servislerimiz
+Sitemizin arka ucu 5 yardımcı servise ihtiyaç duyar. Hepsini bilgisayarına tek tek kurmak yerine Docker konteynerlerinde çalıştırıyoruz:
+
+| Servis | Ne işe yarar? | Senin bilgisayarındaki adres | Tarayıcıdan bak |
+|---|---|---|---|
+| **PostgreSQL** | Ana veritabanı: ürünler, siparişler, kullanıcılar. | `localhost:15432` | — |
+| **Redis** | Çok hızlı bellek-içi depo: oturumlar, oran sınırlama, iş kuyruğu (BullMQ). | `localhost:16379` | — |
+| **Meilisearch** | Arama motoru: "gardırop" yazınca "gardirop"u da bulur, yazım hatası tolere eder. | `localhost:17700` | http://localhost:17700 |
+| **RustFS (S3)** | Dosya deposu: ürün fotoğrafları. Amazon S3 ile aynı dili konuşur. | `localhost:19000` | Konsol: http://localhost:19001 (kullanıcı `mobilya` / şifre `mobilya_dev_secret`) |
+| **Mailpit** | Sahte e-posta sunucusu: site e-posta gönderince gerçek kişiye gitmez, burada yakalanır. | SMTP `localhost:11025` | http://localhost:18025 |
+
+- **Neden portlar 15432 gibi?** Bilgisayarında başka bir projenin (todo) Postgres'i zaten 5432'de çalışıyor. Aynı kapıyı iki
+  program kullanamaz. Kural basit: **standart port'un başına 1** (5432 → 15432).
+- **Neden MinIO değil de RustFS?** Belgelerde MinIO yazıyordu. Kurarken gördük ki MinIO'nun açık kaynak projesi **arşivlenmiş**:
+  artık güvenlik güncellemesi almıyor. Aynı S3 dilini konuşan, aktif geliştirilen RustFS'e geçtik (ADR-006). Kodumuz S3
+  standardını kullandığı için ileride gerçek bir bulut deposuna geçmek de kolay olacak.
+- **`healthcheck` neden önemli?** "Konteyner açıldı" ≠ "servis hazır". Postgres açıldıktan birkaç saniye sonra bağlantı
+  kabul eder. `--wait` bayrağı, hepsi `healthy` olana kadar bekler; böylece testler hazır olmayan veritabanına bağlanmaya çalışmaz.
+- **`s3-init` nedir?** Fotoğrafların konacağı `media` bucket'ını oluşturan, işi bitince kapanan küçük bir konteyner.
+  Bucket zaten varsa "zaten var" der ve dokunmaz (idempotent).
+- **Komutlar:**
+  - `pnpm infra:up` → servisleri başlat (Docker Desktop açık olmalı).
+  - `pnpm infra:down` → durdur (veriler kalır).
+  - `pnpm infra:reset` → **bütün verileri sil** ve sıfırdan başlat.
+  - `docker compose ps` → durumlar; `docker compose logs postgres` → bir servisin logları.
+
 ### Git
 - **Ne:** Her değişikliğin geçmişini tutar; bir şey bozulursa eski hâline dönülebilir.
 - **Bizdeki kural:** Her görev bir commit. Mesajlar "Conventional Commits" biçiminde: `feat(catalog): ... [F4.7]`
@@ -241,6 +277,7 @@ git commit -m "..."
 | `pnpm ui:snap <rota>` | Sayfanın farklı ekran genişliklerinde ekran görüntüsünü alır | F0.7'de gelecek |
 | `pnpm knip` | Kullanılmayan kod/bağımlılık avcısı | F0.2 |
 | `pnpm format` / `pnpm format:check` | Kodu Prettier ile biçimlendir / yalnızca kontrol et | F0.2 |
+| `pnpm infra:up` / `infra:down` / `infra:reset` | Lokal servisleri başlat / durdur / verileri silip sıfırla | F0.3 |
 
 ---
 
@@ -314,3 +351,42 @@ pnpm knip                 # ölü kod taraması
 git commit --allow-empty -m "deneme"   # → commitlint reddeder ("type may not be empty"); hiçbir şey kaydedilmez
 ```
 Bir de şunu dene: `packages/config/eslint/base.js` dosyasını VS Code'da aç ve kuralların yanındaki yorumları oku.
+
+> **F0.2'den küçük bir ders (commit mesajı):** F0.2'yi kaydederken benim ilk commit mesajım
+> `chore(config): TypeScript, ESLint, ...` idi ve **kendi kurduğumuz kanca reddetti**: konu (subject) büyük harfle
+> başlamamalı. Mesajı `chore(config): ortak tsconfig, eslint, ...` diye düzelttim. Kurallar herkese, Claude'a da işliyor. 🙂
+
+### F0.3 · Lokal servisler — Docker Compose (2026-11-12)
+
+**Ne yaptık?**
+1. `docker-compose.yml` yazdık: PostgreSQL, Redis, Meilisearch, RustFS (S3) ve Mailpit. Her birinin sağlık kontrolü ve
+   kalıcı veri alanı (volume) var.
+2. `media` bucket'ını oluşturan tek seferlik `s3-init` servisini ekledik.
+3. `pnpm infra:up | infra:down | infra:reset` komutlarını ekledik.
+
+**Neden böyle? — yolda karşılaştığımız 3 sorun ve çözümleri** (gerçek projede de hep böyle olur):
+1. **MinIO arşivlenmişti.** Docker Hub'da imajı bulunamayınca GitHub'a baktık: proje Nisan 2026'da arşivlenmiş. Bakımsız
+   yazılım güvenlik riski olduğu için alternatifleri karşılaştırdık (RustFS, SeaweedFS, Garage, Versity) ve kararı
+   gerekçesiyle `DECISIONS.md`'ye (ADR-006) yazdık.
+2. **RustFS'in hazır "bucket oluşturma" özelliği bu sürümde bozuktu.** Konteyner "CLI bu özelliği desteklemiyor" diye kapandı.
+   Loglara (`docker compose logs s3`) bakarak bulduk. Çözüm: AWS'nin resmi komut satırı aracıyla ayrı küçük bir iş (`s3-init`).
+3. **`--wait` tek seferlik işi beklemiyordu.** Komut "bitti" dediğinde bucket henüz oluşmamış olabilirdi. Çözüm: işi ayrı
+   bir profile aldık ve `docker compose run` ile **sırayla** çalıştırdık; hata olursa `pnpm infra:up` da hata verir.
+
+**Kabul kriterini nasıl kanıtladık?** Her servise bilerek veri yazdık (tablo, anahtar, arama indeksi, dosya, e-posta),
+`pnpm infra:reset` çalıştırdık ve hepsinin silindiğini tek tek kontrol ettik. "Çalışıyor olmalı" demek yerine **gördük**.
+
+**Öğrenilecek kavramlar:** konteyner, imaj, volume, port eşleme, healthcheck, idempotent işlem, S3/bucket, compose profilleri.
+
+**Kendin dene** (Docker Desktop açık olmalı):
+```bash
+pnpm infra:up                     # servisleri başlat
+docker compose ps                 # hepsi "(healthy)" olmalı
+```
+Sonra tarayıcıda:
+- http://localhost:18025 → Mailpit gelen kutusu (şimdilik boş; F2.8'den sonra kayıt e-postaları buraya düşecek)
+- http://localhost:19001 → RustFS konsolu (`mobilya` / `mobilya_dev_secret`) → `media` bucket'ını gör
+- http://localhost:17700/health → Meilisearch `{"status":"available"}` demeli
+
+Veritabanına bağlanmak istersen (ör. VS Code'da bir PostgreSQL eklentisiyle): sunucu `localhost`, port `15432`,
+kullanıcı `mobilya`, şifre `mobilya_dev`, veritabanı `mobilya`.

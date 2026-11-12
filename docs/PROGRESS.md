@@ -5,10 +5,12 @@
 
 ## Mevcut durum
 - **Faz:** F0 — devam ediyor
-- **Son tamamlanan görev:** F0.2
+- **Son tamamlanan görev:** F0.3
 - **`pnpm verify` son durumu:** ✔ 2026-11-12 (typecheck + lint: config paketi ve kök; test/build henüz yok)
 - **Ortam notu:** Sistem Node'u 22.18.0; proje Node 26.13.1'i pnpm `devEngines` ile kullanıyor (ADR-005).
   Sandbox `.git/` klasörüne yazmayı engelliyor → git yazma komutları sandbox dışında çalıştırılır.
+  Kullanıcının başka bir projesi (`todo_db`, `todo_mailpit`) 5432/1025/8025 portlarını kullanıyor → bizim servisler
+  "1 + standart port" (15432, 16379, 17700, 19000/19001, 11025, 18025). Git Bash'te docker'a Linux yolu verirken `MSYS_NO_PATHCONV=1`.
 
 ## Aktif görev
 > Görev başlarken doldurulur, bitince temizlenir.
@@ -53,6 +55,20 @@ _(yok)_
 > - Kanıt: `pnpm verify` → yeşil (typecheck 0, lint 0, test 12/12, build OK)
 > - Görsel kontrol: (UI ise) `[rota] 10/10 ✔` veya bulgular
 > - Not: …
+
+### 2026-11-12 · F0.3 Lokal servisler (Docker Compose) — ✔
+- Yapılanlar: `docker-compose.yml` (proje adı `mobilya`): postgres, redis (AOF), meilisearch, s3 (RustFS), mailpit — hepsi
+  healthcheck'li ve adlandırılmış volume'lu; `s3-init` (profil `init`, AWS CLI, idempotent bucket `media`).
+  Scriptler: `infra:up` (`up -d --wait` + `run --rm s3-init`), `infra:down`, `infra:reset` (`down --volumes` + `infra:up`).
+  ADR-006: MinIO deposu arşivlendi → RustFS 1.0.5. CLAUDE.md §3, ARCHITECTURE §1, ROADMAP F0.3 metinleri güncellendi.
+- Denenen ve bırakılan: RustFS yerleşik bucket bootstrap'ı → "bundled RustFS CLI does not support bucket Public Access Block"
+  hatasıyla konteyner çıktı (deneme 1). `s3-init` önce `up` ile birlikte başlatıldı; `--wait` işin bitmesini beklemedi (deneme 2).
+  Son çözüm: profil + senkron `docker compose run`.
+- Kanıt:
+  - KK1: `pnpm infra:reset` → postgres, redis, meilisearch, s3, mailpit `Up (healthy)`; `s3-init` → bucket oluştu.
+  - KK2: her servise veri yazıldı (pg tablo `kk_probe`, redis anahtar, meili indeks, `s3://media/kk_probe.txt`, mailpit e-posta) →
+    `pnpm infra:reset` → pg tablo YOK, redis `exists`=0, meili indeks 0, mailpit mesaj 0, `media` bucket boş.
+  - Tekrar `pnpm infra:up` → "bucket media zaten var" (idempotent). `pnpm verify` ✔, `pnpm format:check` ✔.
 
 ### 2026-11-12 · F0.2 TypeScript, ESLint, Prettier, git kancaları — ✔
 - Yapılanlar: `packages/config` → `tsconfig/base.json` (strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes,

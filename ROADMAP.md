@@ -46,9 +46,9 @@
 - **KK:** Kasıtlı hatalı örnek dosya lint/typecheck'te yakalanıyor (sonra silinir); commit kancası hatalı mesajı reddediyor.
 - **Doğrula:** `pnpm lint && pnpm typecheck`; hatalı bir commit mesajı denemesinin reddedildiğini gör.
 
-### [ ] F0.3 Lokal servisler (Docker Compose)
+### [x] F0.3 Lokal servisler (Docker Compose)
 - **Bağımlılık:** F0.1
-- **Yap:** `docker-compose.yml`: postgres, redis, meilisearch, minio (+ bucket oluşturma), mailpit — hepsinde healthcheck, adlandırılmış volume. `pnpm infra:up|down|reset`.
+- **Yap:** `docker-compose.yml`: postgres, redis, meilisearch, S3 — RustFS, MinIO yerine ADR-006 (+ bucket oluşturma), mailpit — hepsinde healthcheck, adlandırılmış volume. `pnpm infra:up|down|reset`.
 - **KK:** `pnpm infra:up` sonrası tüm servisler `healthy`; `infra:reset` verileri sıfırlar.
 - **Doğrula:** `docker compose ps` çıktısında hepsi healthy.
 

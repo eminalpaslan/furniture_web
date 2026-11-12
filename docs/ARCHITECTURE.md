@@ -19,7 +19,7 @@
                  │  modüler monolit — §2               │
                  └──┬──────────┬──────────┬────────┬───┘
                     │          │          │        │
-              PostgreSQL     Redis     Meilisearch  S3 (MinIO)
+              PostgreSQL     Redis     Meilisearch  S3 (RustFS)
               (Prisma)    (cache, rate   (arama)    (görseller)
                           limit, BullMQ)
                     │

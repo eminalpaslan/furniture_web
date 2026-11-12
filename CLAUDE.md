@@ -120,7 +120,7 @@ ya da sonraki faza görev olarak eklenir.
 | Veritabanı | PostgreSQL + Prisma ORM | Migration'lar `apps/api/prisma` |
 | Önbellek / kuyruk | Redis + BullMQ | Oran sınırlama, oturum, işler |
 | Arama | Meilisearch | Türkçe tipo toleransı, facet filtre |
-| Dosya depolama | S3 uyumlu (lokalde MinIO) | Görsel dönüşümü: Next/Image + kaynak boyut sınırları |
+| Dosya depolama | S3 uyumlu (lokalde RustFS — ADR-006) | Görsel dönüşümü: Next/Image + kaynak boyut sınırları |
 | Stil | Tailwind CSS + CSS değişkenli token'lar | Token kaynağı: `packages/ui/tokens` |
 | UI temelleri | Radix UI primitives (shadcn/ui deseni) | Erişilebilirlik hazır gelir |
 | Animasyon | Motion (Framer Motion) + CSS geçişleri | Kurallar: `docs/DESIGN_SYSTEM.md §6` |
@@ -131,7 +131,7 @@ ya da sonraki faza görev olarak eklenir.
 | E-posta / SMS | Soyut `Notifier` arayüzü; lokalde Mailpit | Sağlayıcı seçimi F11'de |
 | Test | Vitest (birim), Testcontainers + Supertest (entegrasyon), Playwright (e2e + görsel), axe-core (a11y) | |
 | Kalite | ESLint, Prettier, Lighthouse CI, Knip (ölü kod) | |
-| Lokal ortam | Docker Compose: postgres, redis, meilisearch, minio, mailpit | |
+| Lokal ortam | Docker Compose: postgres, redis, meilisearch, rustfs (S3), mailpit | |
 | CI | GitHub Actions: `pnpm verify` + e2e + Lighthouse | |
 
 ### 3.1 Klasör yapısı (hedef)

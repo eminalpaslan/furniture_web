@@ -16,6 +16,22 @@
 
 ---
 
+### ADR-006 · Lokal S3: MinIO yerine RustFS
+- Tarih: 2026-11-12
+- Durum: kabul
+- Bağlam: F0.3. `minio/minio` imajı Docker Hub'da artık yok; `github.com/minio/minio` deposu **arşivlenmiş** (son push 2026-04-24).
+  Bakımı yapılmayan bir bileşen, güvenlik güncellemesi almayacağı için kullanılmamalı. CLAUDE.md §3 yalnızca "S3 uyumlu"
+  depolama şart koşuyor; MinIO lokal emülatör olarak anılıyordu.
+- Karar: Lokal S3 emülatörü olarak **RustFS 1.0.5** (`rustfs/rustfs:1.0.5`, Apache-2.0, kararlı 1.0 serisi, aktif geliştirme).
+  Uygulama kodu yalnızca standart S3 API'sini (`@aws-sdk/client-s3`) kullanır; emülatör değişse de kod değişmez.
+  Bucket oluşturma: tek seferlik `s3-init` servisi (`amazon/aws-cli:2.40.1`, `head-bucket || create-bucket`, idempotent).
+  RustFS'in yerleşik bucket bootstrap'ı denendi; 1.0.5 imajındaki `rc` CLI "public access block" desteklemediği için açılışta
+  hata verdi → kullanılmadı.
+- Alternatifler: SeaweedFS (S3 dışında çok bileşenli, ayarı daha karmaşık); Garage (Docker Hub'da yalnızca commit etiketli
+  imajlar, sürüm etiketi az); Versity Gateway (daha küçük topluluk); arşivlenmiş MinIO'nun eski imajı (güvenlik güncellemesi yok).
+- Sonuçlar: CLAUDE.md §3, ARCHITECTURE §1 ve ROADMAP F0.3 metni güncellendi. Üretimde hangi S3 sağlayıcısının
+  kullanılacağı F12.1 barındırma kararında belirlenir.
+
 ### ADR-005 · Node sürümünü pnpm yönetir; yeni sürümler için tek tek istisna
 - Tarih: 2026-11-12
 - Durum: kabul
@@ -70,4 +86,7 @@
 - 2026-11-12 · husky@9.1.7 + lint-staged@17.6.0 · git kancaları; kancalar araçları `pnpm exec` ile çağırır, çünkü lint-staged Node ≥22.22.1 ister (ADR-005 Node'u) · simple-git-hooks daha az yaygın
 - 2026-11-12 · @commitlint/cli + config-conventional@21.2.4 · Conventional Commits zorlaması (CLAUDE.md §7) · —
 - 2026-11-12 · knip@6.45.1 · ölü kod / kullanılmayan bağımlılık (CLAUDE.md §3) · —
+- 2026-11-12 · Docker imajları: postgres:18.6-alpine3.24, redis:8.8.4-alpine3.23, getmeili/meilisearch:v1.56.2,
+  rustfs/rustfs:1.0.5 (ADR-006), axllent/mailpit:v1.33.1, amazon/aws-cli:2.40.1 (yalnızca bucket kurulumu) · CLAUDE.md §3 lokal ortam ·
+  postgres 19rc1 ve redis 8.12-rc2 etiketleri RC olduğu için alınmadı
 - 2026-11-12 · Not: `.only`/`.skip` yasağı test eklentisiyle (eslint-plugin-vitest / playwright) F0.6'da eklenecek.

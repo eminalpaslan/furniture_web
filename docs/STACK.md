@@ -72,3 +72,14 @@
 | eslint-config-prettier | 10.1.8 | F0.2 | Prettier ile çakışan kuralları kapatır |
 | @eslint-community/eslint-plugin-eslint-comments | 4.8.1 | F0.2 | gerekçesiz `eslint-disable` yasağı |
 | globals | 17.14.0 | F0.2 | ortam global'leri (node, browser) |
+
+## Lokal servisler (Docker imajları — `docker-compose.yml`)
+
+| Servis | İmaj | Kurulum | Not |
+|---|---|---|---|
+| PostgreSQL | `postgres:18.6-alpine3.24` | F0.3 | `19rc1` RC → alınmadı. Volume `/var/lib/postgresql` (PG18 düzeni) |
+| Redis | `redis:8.8.4-alpine3.23` | F0.3 | `8.12-rc2` RC → alınmadı. AOF açık |
+| Meilisearch | `getmeili/meilisearch:v1.56.2` | F0.3 | |
+| S3 (RustFS) | `rustfs/rustfs:1.0.5` | F0.3 | MinIO arşivlendi → ADR-006 |
+| Mailpit | `axllent/mailpit:v1.33.1` | F0.3 | |
+| AWS CLI | `amazon/aws-cli:2.40.1` | F0.3 | Yalnızca `s3-init` (bucket oluşturma) |
