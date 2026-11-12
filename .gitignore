@@ -1,0 +1,32 @@
+# Bağımlılıklar
+node_modules/
+
+# Derleme çıktıları
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+
+# Turborepo önbelleği
+.turbo/
+
+# Test / araç çıktıları
+coverage/
+playwright-report/
+test-results/
+.artifacts/
+
+# Gizli bilgiler — yalnızca örnek dosya commit'lenir (CLAUDE.md §1-9)
+.env*
+!.env.example
+
+# Log ve işletim sistemi dosyaları
+*.log
+.DS_Store
+Thumbs.db
+
+# Editör
+.vscode/*
+!.vscode/extensions.json
+.idea/

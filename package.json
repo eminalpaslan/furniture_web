@@ -1,0 +1,28 @@
+{
+  "name": "mobilya-eticaret",
+  "private": true,
+  "packageManager": "pnpm@12.18.0",
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "26.13.1",
+      "onFail": "download"
+    }
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "verify": "turbo run typecheck lint test build",
+    "e2e": "node scripts/not-ready.mjs e2e F0.6",
+    "e2e:a11y": "node scripts/not-ready.mjs e2e:a11y F0.6",
+    "ui:snap": "node scripts/not-ready.mjs ui:snap F0.7",
+    "knip": "node scripts/not-ready.mjs knip F0.2"
+  },
+  "devDependencies": {
+    "turbo": "2.11.11",
+    "typescript": "6.0.3"
+  }
+}

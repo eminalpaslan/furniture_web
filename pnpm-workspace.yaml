@@ -1,0 +1,19 @@
+packages:
+  - apps/*
+  - packages/*
+  - e2e
+
+# Sürümler package.json'a tam (^/~ olmadan) yazılır — CLAUDE.md §3 sürüm politikası.
+saveExact: true
+
+# pnpm, yeni yayınlanmış sürümleri tedarik zinciri saldırılarına karşı bir süre bekletir (minimumReleaseAge).
+# Sürüm politikamız "doğrulama günündeki en güncel kararlı sürüm" olduğu için, bilinçli olarak
+# sabitlenen sürümler burada tek tek istisna edilir. Bkz. docs/DECISIONS.md ADR-005.
+minimumReleaseAgeExclude:
+  - '@turbo/darwin-64@2.11.11'
+  - '@turbo/darwin-arm64@2.11.11'
+  - '@turbo/linux-64@2.11.11'
+  - '@turbo/linux-arm64@2.11.11'
+  - '@turbo/windows-64@2.11.11'
+  - '@turbo/windows-arm64@2.11.11'
+  - turbo@2.11.11
