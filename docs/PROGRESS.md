@@ -27,9 +27,8 @@
 - **Notlar / riskler:** —
 
 ## Sonraki görevlere devredilen notlar
-- CI henüz GitHub'da hiç çalışmadı (depo uzak sunucuya gönderilmedi) → F0 çıkış kapısındaki "CI yeşil" maddesi yerel `CI=1`
-  provasıyla karşılandı; ilk push'tan sonra Actions sekmesinde gerçek sonuç kontrol edilecek (Kullanıcıdan beklenenler #13).
-  F12 öncesi staging/production için uygulama değişkenleri `.env` yerine ortamdan gelecek → turbo `env`/`passThroughEnv` gözden geçirilir.
+- Depo: https://github.com/eminalpaslan/furniture_web (`origin`). İlk CI çalıştırması (run 43278557333, commit 8f9dfb7) **yeşil**,
+  ~2 dk; tüm adımlar ✔ → F0 çıkış kapısı "CI yeşil" artık GitHub'da kanıtlı. F12 öncesi staging/production için uygulama değişkenleri `.env` yerine ortamdan gelecek → turbo `env`/`passThroughEnv` gözden geçirilir.
 - Kapsam eşikleri → ROADMAP F2.3a. `/v1` öneki + üretim env sertleştirme → F2.1a. CSS token denetimi → F1.1a. `server-only` env → F4.1a.
 - F2.1: API yanıtlarında `X-Powered-By: Express` var → helmet ile kaldırılacak (zaten F2.1 kapsamında).
 - Windows notu: `pnpm dev` arka planda durdurulunca node alt süreçleri 3000/3001/4000'i tutmaya devam edebiliyor → PID ile kapat.
@@ -56,7 +55,7 @@ _(yok)_
 | 10 | Alan adı ve barındırma tercihi (KVKK) | F12.1 | — | sonra |
 | 11 | WhatsApp destek numarası, sosyal medya hesapları | F4.2 | yer tutucu | bekleniyor |
 | 12 | Gerçek ürün verisi ve fotoğrafları | F12.3 | seed verisi | sonra |
-| 13 | GitHub deposu (özel) — kod oraya gönderilince CI çalışır | F0.8 doğrulaması | yerel prova (`CI=1`) | opsiyonel |
+| 13 | GitHub deposu — kod oraya gönderilince CI çalışır | F0.8 doğrulaması | yerel prova (`CI=1`) | ✔ alındı (eminalpaslan/furniture_web) |
 
 ## Ölçümler
 > Lighthouse, paket boyutu, yük testi sonuçları. Format: tarih · sayfa/senaryo · değerler.
