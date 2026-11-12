@@ -52,7 +52,7 @@
 - **KK:** `pnpm infra:up` sonrası tüm servisler `healthy`; `infra:reset` verileri sıfırlar.
 - **Doğrula:** `docker compose ps` çıktısında hepsi healthy.
 
-### [ ] F0.4 Uygulama iskeletleri
+### [x] F0.4 Uygulama iskeletleri
 - **Bağımlılık:** F0.2, F0.3
 - **Yap:** `apps/web` ve `apps/admin` (Next.js App Router, TS, Tailwind), `apps/api` (NestJS) + `main.worker.ts` boş worker. `pnpm dev` hepsini paralel başlatır (portlar: web 3000, admin 3001, api 4000).
 - **KK:** Üç uygulama ayağa kalkıyor; api `/health/live` 200 dönüyor; web ve admin boş sayfa render ediyor; `pnpm build` yeşil.

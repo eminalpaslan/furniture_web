@@ -127,14 +127,43 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | `eslint/base.js` | Bütün projenin **ortak lint kuralları** (bir fonksiyon: `baseConfig(klasör)`). | F0.2 |
 | `prettier/index.js` | Ortak biçim kuralları: tek tırnak, satır sonu virgülü, 100 karakter satır. | F0.2 |
 | `eslint.config.js`, `tsconfig.json` | Config paketinin **kendi** dosyalarını denetlemek için (evet, ayar dosyaları da denetleniyor). | F0.2 |
+| `tsconfig/nextjs.json`, `tsconfig/nestjs.json` | Ortak tabanın Next.js ve NestJS için özelleştirilmiş hâlleri. | F0.4 |
+| `eslint/next.js`, `eslint/nest.js` | Ortak lint kurallarına Next/React ve Nest'e özel kuralların eklenmiş hâlleri. | F0.4 |
+
+### `apps/web` ve `apps/admin` içi (Next.js — ikisi aynı yapıda)
+
+| Dosya | Ne işe yarar? | Görev |
+|---|---|---|
+| `app/` | **App Router** klasörü: buradaki klasör yapısı = sitenin adresleri. `app/page.tsx` → `/`, ileride `app/urun/[slug]/page.tsx` → `/urun/koltuk-takimi`. | F0.4 |
+| `app/layout.tsx` | Bütün sayfaları saran ortak çerçeve: `<html lang="tr">`, `<body>`. Header/footer ileride buraya gelir. Sayfa başlığı (`metadata`) burada. | F0.4 |
+| `app/page.tsx` | Ana sayfanın kendisi (şimdilik boş `<main />`). | F0.4 |
+| `app/globals.css` | Global stil dosyası; Tailwind'i içeri alır. | F0.4 |
+| `messages/tr.json` | **Kullanıcıya görünen bütün Türkçe metinler.** Kodun içine metin gömülmez; ileride İngilizce eklemek için `en.json` yeter. | F0.4 |
+| `next.config.ts` | Next.js ayarları. | F0.4 |
+| `postcss.config.mjs` | CSS işleme hattı; Tailwind eklentisini çalıştırır. | F0.4 |
+| `tsconfig.json`, `eslint.config.js` | Ortak ayarları (`packages/config`) miras alan kısa dosyalar. | F0.4 |
+| `.next/`, `next-env.d.ts` | Next'in ürettiği derleme çıktısı ve tip dosyası — **otomatik**, git'e girmez. | F0.4 |
+
+### `apps/api` içi (NestJS)
+
+| Dosya | Ne işe yarar? | Görev |
+|---|---|---|
+| `src/main.ts` | API'nin **giriş noktası**: uygulamayı kurar, 4000 portunu dinlemeye başlar. | F0.4 |
+| `src/main.worker.ts` | **İşçi (worker)** sürecinin giriş noktası: e-posta gönderme, arama indeksleme gibi arka plan işleri burada çalışacak (F2.6). | F0.4 |
+| `src/app.module.ts` | API'nin **kök modülü**: bütün özellik modüllerini (health, ileride catalog, cart, orders…) bir araya getirir. | F0.4 |
+| `src/worker.module.ts` | İşçinin kök modülü. | F0.4 |
+| `src/health/health.controller.ts` | `GET /health/live` adresi: "API ayakta mı?" sorusuna `{"status":"ok"}` cevabı. | F0.4 |
+| `src/health/health.module.ts` | Health controller'ını paketleyen modül. | F0.4 |
+| `nest-cli.json` | Nest CLI ayarı: kaynak `src/`, derleyici `tsc`. | F0.4 |
+| `dist/` | Derlenmiş JavaScript — **otomatik**, git'e girmez. | F0.4 |
 
 ### Klasörler
 
 | Klasör | Ne işe yarar? |
 |---|---|
-| `apps/web` | Müşterilerin gördüğü vitrin sitesi (Next.js). *F0.4'te kurulacak.* |
-| `apps/admin` | Yönetim paneli (Next.js). *F0.4'te kurulacak.* |
-| `apps/api` | Arka uç API'si (NestJS) + veritabanı şeması. *F0.4'te kurulacak.* |
+| `apps/web` | Müşterilerin gördüğü vitrin sitesi (Next.js) — `localhost:3000`. |
+| `apps/admin` | Yönetim paneli (Next.js) — `localhost:3001`. |
+| `apps/api` | Arka uç API'si (NestJS) — `localhost:4000`. Veritabanı şeması da burada olacak (F2.2). |
 | `packages/ui` | Ortak tasarım sistemi: renkler, butonlar, formlar… web ve admin aynısını kullanır. |
 | `packages/contracts` | API ile ön yüz arasındaki "sözleşme": veri şemaları (Zod). |
 | `packages/config` | Ortak ayar dosyaları: TypeScript, ESLint, Tailwind. |
@@ -231,6 +260,37 @@ git commit -m "..."
 - **Ne:** Hiç kullanılmayan dosyaları, export'ları ve `package.json`'da yazılı ama kullanılmayan bağımlılıkları bulur.
 - **Komut:** `pnpm knip`. Proje büyüdükçe "unutulmuş çöp" birikmesini önler.
 
+### Next.js (vitrin ve yönetim paneli)
+- **Ne:** React ile web sitesi yapma çatısı (framework). React sayfa *parçalarını* yazar; Next.js bunları adreslere bağlar,
+  sunucuda HTML üretir, görselleri optimize eder, derleme yapar.
+- **Neden:** E-ticarette Google'da görünmek (SEO) ve hızlı açılmak kritik. Next.js sayfaları **sunucuda** hazırlayıp
+  (Server Components) tarayıcıya hazır HTML gönderir → hızlı ilk açılış, arama motorları içeriği okur.
+- **App Router mantığı:** Klasör = adres. `app/sepet/page.tsx` dosyası oluşturursan `/sepet` sayfası olur.
+- **`layout.tsx` vs `page.tsx`:** Layout, sayfa değişse de kalan çerçeve (header, footer); page, değişen içerik.
+- **Komutlar:** `next dev` (geliştirme — kaydedince anında yenilenir), `next build` (yayın için derle), `next start` (derlenmişi çalıştır).
+
+### Tailwind CSS
+- **Ne:** Hazır küçük CSS sınıflarıyla stil verme: `class="p-4 text-lg"` = iç boşluk 4 birim, büyük yazı.
+- **Neden:** Ayrı CSS dosyalarında kaybolmak yerine stil, bileşenin yanında durur; F1.1'de sadece **bizim tasarım token'larımız**
+  kullanılabilecek şekilde kısıtlanacak (rastgele renk/ölçü yok → tutarlı tasarım).
+
+### NestJS (API)
+- **Ne:** Node.js ile sunucu (API) yazma çatısı. Kodu **modüllere** böler: her modülün bir *controller*'ı (adresleri karşılar),
+  bir *service*'i (iş kuralları) ve ileride bir *repository*'si (veritabanı) olur.
+  ```
+  İstek → Controller (ince: sadece karşılar) → Service (fiyat hesapla, stok kontrol et) → Repository (veritabanı)
+  ```
+- **Neden:** Mağazanın kuralları karmaşık (takım fiyatı, stok rezervasyonu, ödeme). Düzenli bir yapı olmadan büyük projede kod
+  birbirine dolanır. Nest bu düzeni zorlar (ADR-001: modüler monolit).
+- **Dekoratörler (`@Controller`, `@Get`, `@Module`):** Sınıflara/fonksiyonlara "etiket" yapıştırır. `@Get('live')` = "bu fonksiyon
+  `GET /health/live` isteğini karşılar".
+- **Bağımlılık enjeksiyonu (DI):** Bir sınıf ihtiyacı olan servisi kendisi oluşturmaz; Nest onu verir. Test ederken sahte servis
+  vermeyi kolaylaştırır. (`reflect-metadata` paketi bunun için gerekli.)
+- **ESM notu:** Nest 12 yeni JavaScript modül sistemini (ESM) kullanıyor. Bu yüzden API'de importlar `.js` uzantısıyla yazılır:
+  `import { AppModule } from './app.module.js'` — dosya `.ts` olsa bile! (Derlendikten sonra `.js` olacağı için.)
+- **API vs Worker:** İkisi aynı kod tabanından iki ayrı süreç. API kullanıcı isteklerine anında cevap verir; worker yavaş işleri
+  (e-posta göndermek gibi) arka planda yapar. Böylece müşteri "sipariş ver"e basınca e-postanın gitmesini beklemez.
+
 ### Docker Compose ve lokal servislerimiz
 Sitemizin arka ucu 5 yardımcı servise ihtiyaç duyar. Hepsini bilgisayarına tek tek kurmak yerine Docker konteynerlerinde çalıştırıyoruz:
 
@@ -272,7 +332,8 @@ Sitemizin arka ucu 5 yardımcı servise ihtiyaç duyar. Hepsini bilgisayarına t
 | `pnpm install` | Bağımlılıkları kurar | F0.1 |
 | `pnpm verify` | typecheck + lint + test + build — "her şey yolunda mı?" kontrolü | F0.1 (içi görevlerle doluyor) |
 | `pnpm typecheck` / `lint` / `test` / `build` | `verify`'ın parçaları tek tek | F0.1 (içi görevlerle doluyor) |
-| `pnpm dev` | Uygulamaları geliştirme modunda başlatır | F0.4'te dolacak |
+| `pnpm dev` | Üç uygulamayı birlikte başlatır: web :3000, admin :3001, api :4000 (durdurmak: `Ctrl+C`) | F0.4 |
+| `pnpm --filter @mobilya/web dev` | Yalnızca bir uygulamayı başlatır | F0.4 |
 | `pnpm e2e`, `pnpm e2e:a11y` | Tarayıcı testleri, erişilebilirlik testleri | F0.6'da gelecek |
 | `pnpm ui:snap <rota>` | Sayfanın farklı ekran genişliklerinde ekran görüntüsünü alır | F0.7'de gelecek |
 | `pnpm knip` | Kullanılmayan kod/bağımlılık avcısı | F0.2 |
@@ -390,3 +451,42 @@ Sonra tarayıcıda:
 
 Veritabanına bağlanmak istersen (ör. VS Code'da bir PostgreSQL eklentisiyle): sunucu `localhost`, port `15432`,
 kullanıcı `mobilya`, şifre `mobilya_dev`, veritabanı `mobilya`.
+
+### F0.4 · Uygulama iskeletleri (2026-11-12)
+
+**Ne yaptık?**
+1. **Vitrin** (`apps/web`) ve **yönetim paneli** (`apps/admin`) için iki Next.js uygulaması kurduk. Şimdilik boş sayfa
+   gösteriyorlar ama Türkçe dil etiketi (`lang="tr"`), başlık ve Tailwind hazır.
+2. **API** (`apps/api`) için NestJS uygulaması kurduk; ilk adresi `GET /health/live` → `{"status":"ok"}`.
+3. Arka plan işleri için boş bir **worker** girişi ekledik (`main.worker.ts`).
+4. `packages/config`'e Next.js ve NestJS'e özel tsconfig/ESLint ön ayarları ekledik.
+
+**Neden böyle?**
+- **Hazır şablon (`create-next-app`) yerine elle kurduk.** Şablon kendi lint ve TypeScript ayarlarını getirirdi; bizim
+  ortak, daha katı ayarlarımızla çakışırdı. Elle kurunca her dosyanın neden orada olduğunu biliyoruz.
+- **Başlık bile `messages/tr.json`'dan geliyor.** Kural: kullanıcıya görünen metin koda gömülmez. Şimdi alışkanlık edinirsek
+  ileride yüzlerce metni toplamak zorunda kalmayız.
+- **Yönetim paneline `noindex`:** Panel Google'da çıkmamalı.
+- **`poweredByHeader: false`:** Site cevaplarında "Next.js ile yapıldı" bilgisini gizler. Saldırgana hangi yazılımı
+  kullandığımızı söylemenin faydası yok. (API'de aynı başlık hâlâ var; F2.1'de `helmet` ile kaldırılacak.)
+- **Sağlık adresi (`/health/live`):** Sunucuyu izleyen sistemler (Docker, barındırma) "uygulama ayakta mı?" diye buraya sorar.
+
+**Nasıl doğruladık?** `pnpm verify` → 12 görevin hepsi yeşil (tip, lint, derleme). Sonra `pnpm dev` ile üçünü başlatıp
+gerçek istek attık: API `200 {"status":"ok"}`, web ve admin `200` ve doğru başlıklar. Worker'ı da bir kez çalıştırıp
+"Worker started" mesajını gördük.
+
+**Öğrenilecek kavramlar:** framework, App Router (klasör = adres), layout/page, Server Components, NestJS modül/controller/service,
+dekoratör, bağımlılık enjeksiyonu, ESM ve `.js` uzantılı importlar, API ile worker ayrımı.
+
+**Kendin dene:**
+```bash
+pnpm dev
+```
+Sonra tarayıcıda:
+- http://localhost:3000 → vitrin (boş beyaz sayfa; sekme başlığında `[MARKA_ADI]` yazar)
+- http://localhost:3001 → panel (sekme başlığı `[MARKA_ADI] Yönetim`)
+- http://localhost:4000/health/live → `{"status":"ok"}`
+
+Küçük bir deney: `pnpm dev` açıkken `apps/web/app/page.tsx` dosyasında `<main />` yerine `<main>Merhaba</main>` yaz ve kaydet;
+tarayıcı kendiliğinden yenilenir (hot reload). Sonra eski hâline geri al. (Gerçek metinler `messages/tr.json`'a gider —
+bu sadece deney.) Bir sayfa dene: `apps/web/app/deneme/page.tsx` oluştur → http://localhost:3000/deneme açılır. Denemeden sonra sil.

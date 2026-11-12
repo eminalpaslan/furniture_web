@@ -89,4 +89,7 @@
 - 2026-11-12 · Docker imajları: postgres:18.6-alpine3.24, redis:8.8.4-alpine3.23, getmeili/meilisearch:v1.56.2,
   rustfs/rustfs:1.0.5 (ADR-006), axllent/mailpit:v1.33.1, amazon/aws-cli:2.40.1 (yalnızca bucket kurulumu) · CLAUDE.md §3 lokal ortam ·
   postgres 19rc1 ve redis 8.12-rc2 etiketleri RC olduğu için alınmadı
+- 2026-11-12 · next@16.4.6, react/react-dom@19.3.1, tailwindcss + @tailwindcss/postcss@4.3.5 · vitrin ve panel (CLAUDE.md §3) · —
+- 2026-11-12 · @nestjs/core|common|platform-express@12.5.0, @nestjs/cli@12.0.12, reflect-metadata@0.2.2, rxjs@7.8.2 · API (CLAUDE.md §3); Nest 12 ESM olduğu için API de `type: module` + NodeNext, göreli importlar `.js` uzantılı · —
+- 2026-11-12 · @next/eslint-plugin-next@16.4.6, eslint-plugin-react-hooks@7.1.1 · Next/React lint kuralları (`@mobilya/config/eslint/next`) · eslint-config-next kendi typescript-eslint/import eklentilerini getirip ortak taban ile çakışırdı
 - 2026-11-12 · Not: `.only`/`.skip` yasağı test eklentisiyle (eslint-plugin-vitest / playwright) F0.6'da eklenecek.

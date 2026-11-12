@@ -25,6 +25,9 @@
 | next | 16.4.6 | F0.4 | |
 | react / react-dom | 19.3.1 | F0.4 | |
 | tailwindcss / @tailwindcss/postcss | 4.3.5 | F0.4 | |
+| @types/react / @types/react-dom | 19.3.0 | F0.4 | |
+| @next/eslint-plugin-next | 16.4.6 | F0.4 | `packages/config/eslint/next.js` |
+| eslint-plugin-react-hooks | 7.1.1 | F0.4 | |
 | @radix-ui/react-* | (ör. dialog 1.3.1) | F1.x | Her primitive ayrı paket; kurulduğunda tek tek yazılır |
 | motion | 14.13.0 | F1.3 | |
 | embla-carousel-react | 8.6.0 | F1.7 | |
@@ -36,8 +39,11 @@
 
 | Paket | Sürüm | Kurulum | Not |
 |---|---|---|---|
-| @nestjs/core / common / platform-express | 12.5.0 | F0.4 | |
-| @nestjs/cli | 12.0.12 | F0.4 | |
+| @nestjs/core / common / platform-express | 12.5.0 | F0.4 | Nest 12 **ESM** paket (`type: module`) |
+| @nestjs/cli | 12.0.12 | F0.4 | Kendi içinde TypeScript ~6.0.2 kullanır |
+| reflect-metadata | 0.2.2 | F0.4 | Nest DI için |
+| rxjs | 7.8.2 | F0.4 | Nest peer bağımlılığı |
+| @types/express | 5.0.6 | — | F0.4'te kuruldu, kullanılmadığı için (knip) kaldırıldı; gerektiğinde eklenecek |
 | @nestjs/swagger | 12.1.1 | F2.1 | |
 | prisma / @prisma/client | 7.10.1 | F2.2 | `latest` etiketi 8.0.0-rc.33 (RC) → kullanılmaz; kararlı son sürüm 7.10.1 |
 | zod | 4.6.7 | F0.5 | |

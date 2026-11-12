@@ -5,8 +5,8 @@
 
 ## Mevcut durum
 - **Faz:** F0 — devam ediyor
-- **Son tamamlanan görev:** F0.3
-- **`pnpm verify` son durumu:** ✔ 2026-11-12 (typecheck + lint: config paketi ve kök; test/build henüz yok)
+- **Son tamamlanan görev:** F0.4
+- **`pnpm verify` son durumu:** ✔ 2026-11-12 — 12/12 görev (typecheck, lint, build: web, admin, api, config; test henüz yok)
 - **Ortam notu:** Sistem Node'u 22.18.0; proje Node 26.13.1'i pnpm `devEngines` ile kullanıyor (ADR-005).
   Sandbox `.git/` klasörüne yazmayı engelliyor → git yazma komutları sandbox dışında çalıştırılır.
   Kullanıcının başka bir projesi (`todo_db`, `todo_mailpit`) 5432/1025/8025 portlarını kullanıyor → bizim servisler
@@ -19,6 +19,12 @@
 - **Plan:**
   1. —
 - **Notlar / riskler:** —
+
+## Sonraki görevlere devredilen notlar
+- F0.5: `apps/api/src/main.ts` içindeki `API_PORT = 4000` sabiti `env.ts`'ye taşınacak.
+- F0.6: `GET /health/live` için entegrasyon testi (örnek Supertest testi) yazılacak; `.only`/`.skip` lint yasağı eklenecek.
+- F2.1: API yanıtlarında `X-Powered-By: Express` var → helmet ile kaldırılacak (zaten F2.1 kapsamında).
+- Windows notu: `pnpm dev` arka planda durdurulunca node alt süreçleri 3000/3001/4000'i tutmaya devam edebiliyor → PID ile kapat.
 
 ## Engeller
 > 3 deneme kuralına takılan işler (CLAUDE.md §1-12). Format: tarih · görev · denenenler · hata özeti · hipotez · durum.
@@ -55,6 +61,18 @@ _(yok)_
 > - Kanıt: `pnpm verify` → yeşil (typecheck 0, lint 0, test 12/12, build OK)
 > - Görsel kontrol: (UI ise) `[rota] 10/10 ✔` veya bulgular
 > - Not: …
+
+### 2026-11-12 · F0.4 Uygulama iskeletleri — ✔
+- Yapılanlar: `packages/config` → `tsconfig/nextjs.json`, `tsconfig/nestjs.json`, `eslint/next.js` (core-web-vitals + react-hooks),
+  `eslint/nest.js` (dekoratörlü boş sınıf izni). `apps/web` (3000) ve `apps/admin` (3001, noindex): Next.js 16.4.6 App Router,
+  Tailwind 4, `messages/tr.json` (başlık `[MARKA_ADI]`), boş `<main />`. `apps/api` (4000): NestJS 12 ESM, `HealthModule` →
+  `GET /health/live`, `main.worker.ts` + `WorkerModule` (boş). `typecheck` Next'te `next typegen && tsc --noEmit`.
+- Kanıt:
+  - `pnpm verify` → 12/12 görev ✔ (web/admin `next build` statik `/` üretti; api `nest build`).
+  - `pnpm dev` → `curl localhost:4000/health/live` → `HTTP/1.1 200 OK {"status":"ok"}`; `localhost:3000` → 200, `<html lang="tr">`,
+    `<title>[MARKA_ADI]</title>`, `<main></main>`; `localhost:3001` → 200, `noindex, nofollow`; web'de `X-Powered-By` yok.
+  - `pnpm --filter @mobilya/api start:worker` → "WorkerModule dependencies initialized", "Worker started".
+- Not: Next ve turbo anonim telemetri mesajı basıyor; zararsız, kapatma kararı CI görevinde (F0.8) verilecek.
 
 ### 2026-11-12 · F0.3 Lokal servisler (Docker Compose) — ✔
 - Yapılanlar: `docker-compose.yml` (proje adı `mobilya`): postgres, redis (AOF), meilisearch, s3 (RustFS), mailpit — hepsi
