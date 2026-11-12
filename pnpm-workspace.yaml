@@ -22,3 +22,11 @@ minimumReleaseAgeExclude:
   - '@nestjs/core@12.5.0'
   - '@nestjs/platform-express@12.5.0'
   - '@nestjs/testing@12.5.0'
+
+# Bağımlılıkların kurulum sırasında kod (install/postinstall betiği) çalıştırması varsayılan olarak kapalıdır.
+# Buradakiler bilinçli olarak REDDEDİLDİ: üçü de Testcontainers'ın Docker bağlantı zincirinden gelen isteğe bağlı
+# derlemeler / uyarılar; çalışmaları gerekmez. Bkz. docs/DECISIONS.md (F0.9 bağımlılık kaydı).
+allowBuilds:
+  cpu-features: false
+  protobufjs: false
+  ssh2: false
