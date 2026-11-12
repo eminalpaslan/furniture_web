@@ -71,6 +71,13 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | **Typecheck** | TypeScript'in bütün kodu tip hatalarına karşı taraması. |
 | **Lint** | Kodu hata riskli kalıplar ve kurallar açısından tarayan otomatik kontrol (ESLint). |
 | **Build** | Kaynak kodu, çalıştırılabilir/yayınlanabilir hâle derlemek. |
+| **tsconfig** | TypeScript'in ayar dosyası (`tsconfig.json`): ne kadar katı olacağı, hangi dosyaları kontrol edeceği. |
+| **`extends`** | Bir ayar dosyasının başka bir ayar dosyasını "miras alması". Ortak ayar bir kez yazılır, herkes onu genişletir. |
+| **Formatter (biçimlendirici)** | Kodun *görünüşünü* (girinti, tırnak, satır uzunluğu) otomatik düzenleyen araç — Prettier. Lint'ten farkı: lint *hatayı*, formatter *görünüşü* düzeltir. |
+| **Git hook (kanca)** | Git'in belirli anlarda (commit'ten önce, commit mesajı yazılınca…) otomatik çalıştırdığı betik. |
+| **Staged** | `git add` ile commit'e hazırlanmış (sahneye alınmış) değişiklikler. |
+| **Conventional Commits** | Commit mesajı standardı: `tip(kapsam): açıklama`. Geçmişi okunur ve otomatik işlenebilir kılar. |
+| **Ölü kod** | Hiçbir yerden çağrılmayan, silinebilecek kod veya kullanılmayan bağımlılık. |
 
 ---
 
@@ -94,6 +101,22 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | `.gitignore` | Git'in **takip etmeyeceği** dosyalar: `node_modules`, derleme çıktıları, gizli `.env` dosyaları. | F0.1 |
 | `.gitattributes` | Windows'ta bile depoda satır sonlarının LF kalmasını sağlar (Windows CRLF kullanır, karışıklık olmasın). | F0.1 |
 | `scripts/not-ready.mjs` | Henüz kurulmamış komutları (`pnpm e2e` gibi) çağırınca "şu görevde gelecek" diye **hata** veren küçük betik. Sessizce "başarılı" demesin diye. | F0.1 |
+| `eslint.config.js` | Kökteki dosyalar için ESLint ayarı. Asıl kurallar `packages/config/eslint/base.js`'te; bu dosya onları çağırır. | F0.2 |
+| `commitlint.config.js` | Commit mesajı kuralları (Conventional Commits). | F0.2 |
+| `lint-staged.config.js` | Commit'ten önce **yalnızca değişen dosyalarda** hangi kontrollerin çalışacağı. | F0.2 |
+| `.husky/pre-commit` | Her commit'ten **önce** çalışan kanca → `lint-staged`'i çalıştırır. | F0.2 |
+| `.husky/commit-msg` | Commit mesajı yazılınca çalışan kanca → `commitlint` ile mesajı denetler. | F0.2 |
+| `.prettierignore` | Prettier'ın dokunmayacağı dosyalar (kilit dosyası ve Markdown belgeleri). | F0.2 |
+| `knip.json` | Knip'e (ölü kod avcısı) projenin giriş noktalarını söyler. | F0.2 |
+
+### `packages/config` içi
+
+| Dosya | Ne işe yarar? | Görev |
+|---|---|---|
+| `tsconfig/base.json` | Bütün projenin **ortak TypeScript ayarı**. Her uygulama bunu `extends` ile miras alır. | F0.2 |
+| `eslint/base.js` | Bütün projenin **ortak lint kuralları** (bir fonksiyon: `baseConfig(klasör)`). | F0.2 |
+| `prettier/index.js` | Ortak biçim kuralları: tek tırnak, satır sonu virgülü, 100 karakter satır. | F0.2 |
+| `eslint.config.js`, `tsconfig.json` | Config paketinin **kendi** dosyalarını denetlemek için (evet, ayar dosyaları da denetleniyor). | F0.2 |
 
 ### Klasörler
 
@@ -154,6 +177,50 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 - **Sürüm notu:** TypeScript 7 çıkmış (Go diliyle yeniden yazılmış, çok hızlı) ama lint aracımız henüz desteklemiyor.
   Bu yüzden 6.0.3 kullanıyoruz (ADR-004). Bu, "en yeniyi körü körüne almamak, araçların uyumuna bakmak" için güzel bir örnek.
 
+### TypeScript ayarlarımız (`packages/config/tsconfig/base.json`) — neden bu kadar katı?
+| Ayar | Ne yapar? | Mobilya sitesinde hangi hatayı önler? |
+|---|---|---|
+| `strict` | Bütün temel katı kontrolleri açar (ör. `null` olabilecek değeri kontrol etmeden kullanamazsın). | Ürünün indirimli fiyatı yokken `null.toFixed()` çökmesi. |
+| `noUncheckedIndexedAccess` | `liste[0]` her zaman "belki `undefined`" sayılır. | Galeride hiç görsel yokken `gorseller[0].url` ile sayfanın çökmesi. |
+| `exactOptionalPropertyTypes` | İsteğe bağlı alan "hiç yok" ile "değeri `undefined`" arasında ayrım yapar. | API'ye "alanı silme" ile "alanı boş bırak" farkının karışması. |
+| `noImplicitReturns` | Fonksiyonun her yolu bir değer döndürmeli. | Bir `if` dalında fiyat döndürmeyi unutmak. |
+
+### ESLint (lint aracı)
+- **Ne:** Kodu okuyup kurallara aykırı kalıpları bulur. TypeScript "tip yanlış" der; ESLint "bu kod tehlikeli/kurala aykırı" der.
+- **Kurallarımızdan örnekler** (hepsi `packages/config/eslint/base.js`'te):
+  - `no-explicit-any`: `any` tipi yasak — TypeScript'in korumasını kapatır.
+  - `no-console`: `console.log` üretim koduna kalmasın (log için ileride düzgün bir log aracı — pino — gelecek).
+  - **Ham hex renk yasağı:** `.tsx` dosyalarında `'#ff0000'` yazamazsın; renkler tasarım token'larından gelmeli
+    (`bg-primary` gibi). Böylece marka rengi değişince tek yerden değişir. (`no-restricted-syntax` kuralıyla, kendi yazdığımız desenle.)
+  - **Tailwind keyfi değer yasağı:** `w-[37px]` gibi "o ana özel" ölçüler yasak; tasarım tutarlı kalsın.
+  - Gerekçesiz `eslint-disable` yasak: bir kuralı kapatmak istersen yanına **neden** yazmalısın: `// eslint-disable-next-line kural -- neden`.
+  - `simple-import-sort`: `import` satırları hep aynı sırada → farklar (diff) temiz.
+- **Tipe duyarlı (type-aware) kurallar:** Bazı kurallar TypeScript'in tip bilgisini kullanır (ör. "bu değer `Promise` ama `await` edilmemiş").
+  Bu yüzden ESLint'e tsconfig'in yeri söylenir (`projectService`).
+
+### Prettier (biçimlendirici)
+- **Ne:** Kodun görünüşünü otomatik düzeltir. Kimse "tek tırnak mı çift tırnak mı" tartışmaz; Prettier karar verir.
+- **Neden Markdown hariç:** Belgelerimizdeki Türkçe tablolar ve uzun satırlar elle düzenlendi; Prettier onları yeniden dizerdi.
+- **Komutlar:** `pnpm format` (düzelt), `pnpm format:check` (yalnızca kontrol et).
+
+### Husky + lint-staged + commitlint (git kancaları)
+Commit'i "kalite kapısı"na çeviren üçlü:
+```
+git commit -m "..."
+   │
+   ├─ .husky/pre-commit  → lint-staged → değişen dosyalarda: eslint --fix + prettier --write
+   │                                      (hata varsa commit DURUR)
+   └─ .husky/commit-msg  → commitlint → mesaj "tip(kapsam): açıklama" biçiminde mi?
+                                         (değilse commit DURUR)
+```
+- **Husky:** Kancaları `.husky/` klasöründen git'e tanıtır (`pnpm install` sırasında `prepare` script'iyle).
+- **Neden `pnpm exec` ile çağırıyoruz?** lint-staged Node ≥22.22.1 istiyor; senin bilgisayarındaki Node 22.18.
+  `pnpm exec` projenin Node 26'sını kullanır. (Böyle bir uyumsuzluğu bulmak için paketin `engines` alanına bakılır.)
+
+### Knip (ölü kod avcısı)
+- **Ne:** Hiç kullanılmayan dosyaları, export'ları ve `package.json`'da yazılı ama kullanılmayan bağımlılıkları bulur.
+- **Komut:** `pnpm knip`. Proje büyüdükçe "unutulmuş çöp" birikmesini önler.
+
 ### Git
 - **Ne:** Her değişikliğin geçmişini tutar; bir şey bozulursa eski hâline dönülebilir.
 - **Bizdeki kural:** Her görev bir commit. Mesajlar "Conventional Commits" biçiminde: `feat(catalog): ... [F4.7]`
@@ -172,7 +239,8 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | `pnpm dev` | Uygulamaları geliştirme modunda başlatır | F0.4'te dolacak |
 | `pnpm e2e`, `pnpm e2e:a11y` | Tarayıcı testleri, erişilebilirlik testleri | F0.6'da gelecek |
 | `pnpm ui:snap <rota>` | Sayfanın farklı ekran genişliklerinde ekran görüntüsünü alır | F0.7'de gelecek |
-| `pnpm knip` | Kullanılmayan kod/bağımlılık avcısı | F0.2'de gelecek |
+| `pnpm knip` | Kullanılmayan kod/bağımlılık avcısı | F0.2 |
+| `pnpm format` / `pnpm format:check` | Kodu Prettier ile biçimlendir / yalnızca kontrol et | F0.2 |
 
 ---
 
@@ -214,3 +282,35 @@ pnpm verify                 # şimdilik "0 görev" — paketler doldukça burada
 pnpm e2e                    # "henüz kurulmadı; F0.6..." hatasını gör
 git log --oneline           # ilk commit'i gör
 ```
+
+### F0.2 · TypeScript, ESLint, Prettier, git kancaları (2026-11-12)
+
+**Ne yaptık?**
+1. `packages/config` paketini doldurduk: ortak TypeScript ayarı, ortak ESLint kuralları, ortak Prettier ayarı.
+   Uygulamalar (F0.4'te gelecek) bunları sıfırdan yazmayacak, **miras alacak**.
+2. Projeye özel iki kural yazdık: `.tsx` dosyalarında ham hex renk ve Tailwind keyfi değer yasağı.
+3. Git kancalarını kurduk: commit'ten önce lint + biçimlendirme, commit mesajı denetimi.
+4. Knip'i kurduk.
+
+**Neden böyle?**
+- **Ortak ayar paketi:** Üç uygulama + dört paket var. Her birinde ayrı ayarlar olsaydı zamanla birbirinden ayrışırdı
+  ("web'de `any` serbest, api'de yasak" gibi). Tek kaynak = tutarlılık.
+- **Kuralları test ettik:** Bilerek hatalı bir dosya yazdık (`any`, `console.log`, `'#ff0000'`, `w-[37px]`, `liste[0]`…) ve
+  araçların **her birini yakaladığını gördük**, sonra dosyayı sildik. Bir kuralı yazmak yetmez; çalıştığını görmek gerekir.
+  Bu testte bir şey daha öğrendik: `data-[state=open]:` gibi Radix bileşenlerinin kullandığı *varyantlar* yasaklanmamalı,
+  yalnızca `w-[37px]` gibi *değerler* yasak — kuralın deseni buna göre yazıldı.
+- **Lint kendi kodumuzu da yakaladı:** `scripts/not-ready.mjs` içindeki `console.error`'ı `no-console` kuralı işaretledi.
+  Kuralı kapatmak yerine doğru aracı kullandık: komut satırı betiğinde hata mesajı `process.stderr.write` ile yazılır.
+- **Kötü commit mesajı denemesi:** `git commit -m "kotu mesaj formati"` → commitlint reddetti ("tip boş olamaz").
+
+**Öğrenilecek kavramlar:** tsconfig ve `extends`, lint ile formatter farkı, tipe duyarlı lint, git kancaları, Conventional Commits, ölü kod.
+
+**Kendin dene:**
+```bash
+pnpm lint                 # bütün lint görevleri (şimdilik config paketi + kök)
+pnpm typecheck            # tip kontrolü
+pnpm format:check         # biçim kontrolü
+pnpm knip                 # ölü kod taraması
+git commit --allow-empty -m "deneme"   # → commitlint reddeder ("type may not be empty"); hiçbir şey kaydedilmez
+```
+Bir de şunu dene: `packages/config/eslint/base.js` dosyasını VS Code'da aç ve kuralların yanındaki yorumları oku.

@@ -3,5 +3,7 @@
 // Araç ilgili görevde kurulunca kök package.json'daki script gerçek komutla değiştirilir.
 const [, , script = '?', task = '?'] = process.argv;
 
-console.error(`"${script}" henüz kurulmadı; ${task} görevinde eklenecek (bkz. ROADMAP.md).`);
+process.stderr.write(
+  `"${script}" henüz kurulmadı; ${task} görevinde eklenecek (bkz. ROADMAP.md).\n`,
+);
 process.exit(1);

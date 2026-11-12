@@ -40,7 +40,7 @@
   3. `pnpm install` temiz makinede hatasız.
 - **Doğrula:** `pnpm install --frozen-lockfile && pnpm verify` (henüz boş paketlerle yeşil).
 
-### [ ] F0.2 TypeScript, ESLint, Prettier, git kancaları
+### [x] F0.2 TypeScript, ESLint, Prettier, git kancaları
 - **Bağımlılık:** F0.1
 - **Yap:** `packages/config` içinde paylaşılan `tsconfig` (strict, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`), ESLint (typescript-eslint strict, import sırası, `no-console`, `no-restricted-syntax` ile ham hex renk yasağı JSX/TSX'te), Prettier; husky + lint-staged (staged dosyalarda lint + format), commitlint (Conventional Commits, scope zorunlu değil, `[F*.*]` önerilir).
 - **KK:** Kasıtlı hatalı örnek dosya lint/typecheck'te yakalanıyor (sonra silinir); commit kancası hatalı mesajı reddediyor.

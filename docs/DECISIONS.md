@@ -61,3 +61,13 @@
 ## Bağımlılık kayıtları
 - 2026-11-12 · turbo@2.11.11 · monorepo görev çalıştırıcı ve önbellek (CLAUDE.md §3) · Nx daha ağır, stack'te kilitli değil
 - 2026-11-12 · typescript@6.0.3 · bkz. ADR-004
+- 2026-11-12 · eslint@10.14.0 + typescript-eslint@8.72.2 + @eslint/js@10.0.1 · lint (CLAUDE.md §3); strictTypeChecked + stylisticTypeChecked · —
+- 2026-11-12 · eslint-plugin-simple-import-sort@14.0.0 · import sırası (F0.2) · eslint-plugin-import-x daha ağır ve tipe duyarlı çözümleme gerektirir; yalnızca sıralama için gereksiz
+- 2026-11-12 · eslint-config-prettier@10.1.8 · biçim kurallarını Prettier'a bırakır · —
+- 2026-11-12 · @eslint-community/eslint-plugin-eslint-comments@4.8.1 · gerekçesiz `eslint-disable` yasağını otomatik zorlar (CLAUDE.md §1-5) · elle inceleme güvenilmez
+- 2026-11-12 · globals@17.14.0 · ESLint ortam global tanımları · —
+- 2026-11-12 · prettier@3.10.1 · biçimlendirme; **Markdown belgeleri hariç** (`.prettierignore`): Türkçe tablo/satır düzeni elle korunur · —
+- 2026-11-12 · husky@9.1.7 + lint-staged@17.6.0 · git kancaları; kancalar araçları `pnpm exec` ile çağırır, çünkü lint-staged Node ≥22.22.1 ister (ADR-005 Node'u) · simple-git-hooks daha az yaygın
+- 2026-11-12 · @commitlint/cli + config-conventional@21.2.4 · Conventional Commits zorlaması (CLAUDE.md §7) · —
+- 2026-11-12 · knip@6.45.1 · ölü kod / kullanılmayan bağımlılık (CLAUDE.md §3) · —
+- 2026-11-12 · Not: `.only`/`.skip` yasağı test eklentisiyle (eslint-plugin-vitest / playwright) F0.6'da eklenecek.

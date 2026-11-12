@@ -1,0 +1,3 @@
+pnpm-lock.yaml
+# Belgeler elle biçimlendirilir (Türkçe tablolar ve uzun satırlar korunur) — DECISIONS.md bağımlılık kayıtları.
+*.md

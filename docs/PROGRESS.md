@@ -5,8 +5,8 @@
 
 ## Mevcut durum
 - **Faz:** F0 — devam ediyor
-- **Son tamamlanan görev:** F0.1
-- **`pnpm verify` son durumu:** ✔ 2026-11-12 (0 görev — paketler henüz boş)
+- **Son tamamlanan görev:** F0.2
+- **`pnpm verify` son durumu:** ✔ 2026-11-12 (typecheck + lint: config paketi ve kök; test/build henüz yok)
 - **Ortam notu:** Sistem Node'u 22.18.0; proje Node 26.13.1'i pnpm `devEngines` ile kullanıyor (ADR-005).
   Sandbox `.git/` klasörüne yazmayı engelliyor → git yazma komutları sandbox dışında çalıştırılır.
 
@@ -53,6 +53,22 @@ _(yok)_
 > - Kanıt: `pnpm verify` → yeşil (typecheck 0, lint 0, test 12/12, build OK)
 > - Görsel kontrol: (UI ise) `[rota] 10/10 ✔` veya bulgular
 > - Not: …
+
+### 2026-11-12 · F0.2 TypeScript, ESLint, Prettier, git kancaları — ✔
+- Yapılanlar: `packages/config` → `tsconfig/base.json` (strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes,
+  noImplicitOverride…), `eslint/base.js` (`baseConfig(tsconfigRootDir)`: strictTypeChecked + stylisticTypeChecked,
+  simple-import-sort, no-console, gerekçesiz eslint-disable yasağı, TSX/JSX'te ham hex + Tailwind keyfi değer yasağı,
+  eslint-config-prettier), `prettier/index.js`. Kök: `eslint.config.js`, `commitlint.config.js`, `lint-staged.config.js`,
+  `.prettierignore` (md hariç), `knip.json`, `.husky/pre-commit` + `.husky/commit-msg` (`pnpm exec`), turbo `//#lint:root`,
+  scriptler `format`, `format:check`, `knip`, `prepare`.
+- Kanıt:
+  - KK (lint): geçici `kk-probe/bad.tsx` → 10 hata: no-restricted-syntax ×3 (hex ×2, `w-[37px]`), no-explicit-any,
+    ban-ts-comment, no-console, prefer-const, no-unsafe-*; `data-[state=open]:bg-surface` doğru şekilde serbest.
+    Gerekçesiz `eslint-disable` → require-description hatası.
+  - KK (typecheck): aynı dosyada TS2322 (noUncheckedIndexedAccess), TS2375 (exactOptionalPropertyTypes). Sonra silindi.
+  - KK (commit kancası): `git commit -m "kotu mesaj formati"` → commitlint `subject-empty`, `type-empty` ile reddetti; git log değişmedi.
+  - `pnpm verify` → 3/3 görev ✔; `pnpm knip` → temiz; `pnpm format:check` → temiz.
+- Not: `.only`/`.skip` lint yasağı F0.6'da test eklentileriyle gelecek.
 
 ### 2026-11-12 · F0.1 Monorepo iskeleti ve sürüm kilidi — ✔
 - Yapılanlar: `git init -b main`; pnpm 12.18.0 global kuruldu; kök `package.json` (packageManager, devEngines Node 26.13.1,

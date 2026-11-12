@@ -67,3 +67,8 @@
 | lint-staged | 17.6.0 | F0.2 | |
 | @commitlint/cli / config-conventional | 21.2.4 | F0.2 | |
 | @types/node | 26.6.6 | F0.2 | Node 26 ile eşleşir |
+| @eslint/js | 10.0.1 | F0.2 | ESLint'in önerilen temel kuralları |
+| eslint-plugin-simple-import-sort | 14.0.0 | F0.2 | import sırası |
+| eslint-config-prettier | 10.1.8 | F0.2 | Prettier ile çakışan kuralları kapatır |
+| @eslint-community/eslint-plugin-eslint-comments | 4.8.1 | F0.2 | gerekçesiz `eslint-disable` yasağı |
+| globals | 17.14.0 | F0.2 | ortam global'leri (node, browser) |

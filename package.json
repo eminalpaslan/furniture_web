@@ -1,6 +1,7 @@
 {
   "name": "mobilya-eticaret",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@12.18.0",
   "devEngines": {
     "runtime": {
@@ -12,16 +13,30 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "lint": "turbo run lint",
+    "lint": "turbo run lint lint:root",
+    "lint:root": "eslint . --max-warnings=0",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "verify": "turbo run typecheck lint test build",
+    "verify": "turbo run typecheck lint lint:root test build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "e2e": "node scripts/not-ready.mjs e2e F0.6",
     "e2e:a11y": "node scripts/not-ready.mjs e2e:a11y F0.6",
     "ui:snap": "node scripts/not-ready.mjs ui:snap F0.7",
-    "knip": "node scripts/not-ready.mjs knip F0.2"
+    "knip": "knip",
+    "prepare": "husky"
   },
+  "prettier": "@mobilya/config/prettier",
   "devDependencies": {
+    "@commitlint/cli": "21.2.4",
+    "@commitlint/config-conventional": "21.2.4",
+    "@mobilya/config": "workspace:*",
+    "@types/node": "26.6.6",
+    "eslint": "10.14.0",
+    "husky": "9.1.7",
+    "knip": "6.45.1",
+    "lint-staged": "17.6.0",
+    "prettier": "3.10.1",
     "turbo": "2.11.11",
     "typescript": "6.0.3"
   }
