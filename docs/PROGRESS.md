@@ -5,9 +5,11 @@
 
 ## Mevcut durum
 - **Faz:** F0 — devam ediyor
-- **Son tamamlanan görev:** F0.6
-- **`pnpm verify` son durumu:** ✔ 2026-11-12 — 21/21 görev, 30/30 test (utils 10, api 14 [unit 8 + entegrasyon 6], web 3, admin 3);
-  `pnpm e2e` 5/5, `pnpm e2e:a11y` 3/3. Entegrasyon testleri için Docker Desktop açık olmalı.
+- **Son tamamlanan görev:** F0.7
+- **`pnpm verify` son durumu:** ✔ 2026-11-12 — 22/22 görev, 38/38 test (utils 10, api 14 [unit 8 + entegrasyon 6], web 3, admin 3,
+  e2e/ui-snap 8); `pnpm e2e` 7/7, `pnpm e2e:a11y` 3/3. Entegrasyon testleri için Docker Desktop açık olmalı.
+- **`ui:snap` kullanımı:** uygulama çalışıyor olmalı (`pnpm dev` veya `pnpm --filter @mobilya/web start`). Git Bash'te
+  `MSYS_NO_PATHCONV=1 pnpm ui:snap / --states hover,focus,menu` (yoksa `/` Windows yoluna çevrilir). Panel için `--base http://localhost:3001`.
 - **Lokal kurulum notu:** `pnpm verify` ve `pnpm dev` kökte `.env` ister (`cp .env.example .env`); yoksa web/admin build'i
   `API_URL: eksik` diyerek durur — bu bilinçli (F0.5).
 - **Ortam notu:** Sistem Node'u 22.18.0; proje Node 26.13.1'i pnpm `devEngines` ile kullanıyor (ADR-005).
@@ -66,6 +68,20 @@ _(yok)_
 > - Kanıt: `pnpm verify` → yeşil (typecheck 0, lint 0, test 12/12, build OK)
 > - Görsel kontrol: (UI ise) `[rota] 10/10 ✔` veya bulgular
 > - Not: …
+
+### 2026-11-12 · F0.7 Görsel öz-kontrol aracı (`ui:snap`) — ✔
+- Yapılanlar: `e2e/ui-snap/` → `options.ts` (argümanlar, slug), `page-checks.ts` (taşma ölçümü + taşan öğeler, konsol/sayfa/istek
+  hataları — tekrarsız, kararlı sayfa bekleme), `states.ts` (hover/focus[Tab + focus]/menu, öğe yoksa not), `snap.ts`
+  (375/768/1280/1440; `<genişlik>-full.png` + durumlar), `report.ts` (metin rapor, uyarı sayısı), `cli.ts` (`.artifacts/screens/<slug>/`,
+  `report.json`). Kök `pnpm ui:snap`; `scripts/not-ready.mjs` silindi (artık yer tutucu script yok).
+- Kanıt:
+  - KK1: `pnpm ui:snap / --states hover,focus,menu` → 4 görüntü (`375/768/1280/1440-full.png`) + report.json; 0 uyarı; ana sayfada
+    etkileşimli öğe olmadığı için durumlar "öğe yok" notu. `375-full.png` Read ile açıldı: 375×812 boş beyaz sayfa (beklenen).
+  - KK2 + KK3: `tests/ui-snap.spec.ts` — 600 px'lik kutulu sayfada 375'te taşma (`div#genis-kutu` taşan öğe olarak), 768'de yok;
+    `console.error` raporda; toplam 5 uyarı. Temiz sayfada 0 uyarı. `375-focus.png` Read ile açıldı: butonda odak halkası görünür.
+  - Birim: `options.test.ts` 8/8. `pnpm verify` 22/22, `pnpm e2e` 7/7, knip ve format temiz.
+- Yolda bulunan: durum görüntüleri için sayfa yeniden yüklendiğinden aynı konsol hatası 3 kez sayılıyordu → toplayıcı tekrarı ayıklıyor
+  (test önce 13 uyarı gösterip kırmızıya döndü, düzeltmeyle 5).
 
 ### 2026-11-12 · F0.6 Test altyapısı — ✔
 - Yapılanlar: `apps/api` Vitest projeleri `unit` + `integration`; `test/support/postgres.ts` (Testcontainers, compose ile aynı

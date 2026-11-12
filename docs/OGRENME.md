@@ -121,7 +121,7 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | `.editorconfig` | Editörlere ortak kural: UTF-8, 2 boşluk girinti, LF satır sonu. Herkesin kodu aynı biçimde. | F0.1 |
 | `.gitignore` | Git'in **takip etmeyeceği** dosyalar: `node_modules`, derleme çıktıları, gizli `.env` dosyaları. | F0.1 |
 | `.gitattributes` | Windows'ta bile depoda satır sonlarının LF kalmasını sağlar (Windows CRLF kullanır, karışıklık olmasın). | F0.1 |
-| `scripts/not-ready.mjs` | Henüz kurulmamış komutları (`pnpm e2e` gibi) çağırınca "şu görevde gelecek" diye **hata** veren küçük betik. Sessizce "başarılı" demesin diye. | F0.1 |
+| `scripts/not-ready.mjs` | Henüz kurulmamış komutları (`pnpm e2e` gibi) çağırınca "şu görevde gelecek" diye **hata** veren küçük betik. Sessizce "başarılı" demesin diye. | F0.1 → F0.7'de silindi (son yer tutucu da gerçek komutla değişti) |
 | `eslint.config.js` | Kökteki dosyalar için ESLint ayarı. Asıl kurallar `packages/config/eslint/base.js`'te; bu dosya onları çağırır. | F0.2 |
 | `commitlint.config.js` | Commit mesajı kuralları (Conventional Commits). | F0.2 |
 | `lint-staged.config.js` | Commit'ten önce **yalnızca değişen dosyalarda** hangi kontrollerin çalışacağı. | F0.2 |
@@ -202,6 +202,15 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | `support/messages.ts` | Testler sayfa metnini uygulamanın `messages/tr.json` dosyasından okur (metin değişse de test bozulmaz). | F0.6 |
 | `support/urls.ts` | Uygulama adresleri (3000, 3001, 4000). | F0.6 |
 | `playwright-report/`, `test-results/` | Test raporu ve hata anındaki ekran görüntüleri — **otomatik**, git'e girmez. | F0.6 |
+| `ui-snap/cli.ts` | `pnpm ui:snap` komutunun giriş noktası: tarayıcıyı açar, sonuçları `.artifacts/screens/`'e yazar. | F0.7 |
+| `ui-snap/options.ts` | Komut argümanlarını okur (`/rota --states hover,focus`), rotayı klasör adına çevirir. | F0.7 |
+| `ui-snap/snap.ts` | Asıl iş: her ekran genişliğinde sayfayı açar, ekran görüntülerini alır. | F0.7 |
+| `ui-snap/page-checks.ts` | Yatay taşma ölçümü ve konsol hatası toplama. | F0.7 |
+| `ui-snap/states.ts` | Sayfayı "üzerine gelinmiş", "odaklanmış", "menü açık" durumlarına getirir. | F0.7 |
+| `ui-snap/report.ts` | Okunur raporu üretir (⚠ uyarılar, ✔ temiz). | F0.7 |
+| `tests/ui-snap.spec.ts` | Aracın kendisinin testi: bilerek taşan + konsola hata yazan sayfada uyarı veriyor mu? | F0.7 |
+
+Kökteki `.artifacts/` klasörü: `ui:snap` çıktıları (ekran görüntüleri + `report.json`) — **otomatik**, git'e girmez.
 
 ### Klasörler
 
@@ -442,7 +451,7 @@ Sitemizin arka ucu 5 yardımcı servise ihtiyaç duyar. Hepsini bilgisayarına t
 | `pnpm dev` | Üç uygulamayı birlikte başlatır: web :3000, admin :3001, api :4000 (durdurmak: `Ctrl+C`) | F0.4 |
 | `pnpm --filter @mobilya/web dev` | Yalnızca bir uygulamayı başlatır | F0.4 |
 | `pnpm e2e`, `pnpm e2e:a11y` | Tarayıcı testleri, erişilebilirlik testleri | F0.6'da gelecek |
-| `pnpm ui:snap <rota>` | Sayfanın farklı ekran genişliklerinde ekran görüntüsünü alır | F0.7'de gelecek |
+| `pnpm ui:snap <rota>` | Sayfanın 4 ekran genişliğinde ekran görüntüsünü alır, taşma ve konsol hatası raporlar (uygulama çalışıyor olmalı) | F0.7 |
 | `pnpm knip` | Kullanılmayan kod/bağımlılık avcısı | F0.2 |
 | `pnpm format` / `pnpm format:check` | Kodu Prettier ile biçimlendir / yalnızca kontrol et | F0.2 |
 | `pnpm infra:up` / `infra:down` / `infra:reset` | Lokal servisleri başlat / durdur / verileri silip sıfırla | F0.3 |
@@ -489,7 +498,7 @@ pnpm exec node -v           # → v26.13.1  (projenin Node'u)
 node -v                     # → v22.x     (bilgisayarının Node'u — farklı! devEngines sayesinde)
 pnpm view prisma dist-tags  # "latest" ile "prev" etiketlerini karşılaştır
 pnpm verify                 # şimdilik "0 görev" — paketler doldukça burada iş görünecek
-pnpm e2e                    # "henüz kurulmadı; F0.6..." hatasını gör
+pnpm e2e                    # (F0.1 anında "henüz kurulmadı" hatası verirdi; F0.6'dan beri gerçek testleri çalıştırır)
 git log --oneline           # ilk commit'i gör
 ```
 
@@ -676,3 +685,35 @@ pnpm --filter @mobilya/api test:coverage         # kodun yüzde kaçı testli? (
 ```
 Bir deney: `e2e/tests/home.spec.ts` içinde `toHaveAttribute('lang', 'tr')` satırındaki `'tr'`yi `'en'` yap, `pnpm e2e` çalıştır →
 testin kırmızıya döndüğünü ve raporda nedenini gör. Sonra geri al.
+
+### F0.7 · Görsel öz-kontrol aracı — `ui:snap` (2026-11-12)
+
+**Ne yaptık?**
+Bir sayfanın ekran görüntüsünü **4 farklı ekran genişliğinde** (375 telefon, 768 tablet, 1280 dizüstü, 1440 geniş ekran)
+otomatik alan bir araç yazdık. Araç ayrıca:
+- **Yatay taşma** var mı kontrol eder (telefonda sayfanın yana kayması — çok sık yapılan ve kullanıcıyı rahatsız eden bir hata) ve
+  taşmaya **hangi öğenin** neden olduğunu söyler,
+- **Konsol hatalarını** listeler (tarayıcının geliştirici konsolunda kırmızı yazan hatalar),
+- İstenirse **etkileşim durumlarını** da çeker: üzerine gelme (hover), klavye odağı (focus), açık menü (menu).
+
+**Neden?** Ben (Claude) sayfayı göremem — ancak ekran görüntüsünü açarak görebilirim. CLAUDE.md §4.2'ye göre her arayüz
+görevinden sonra bu görüntüleri tek tek açıp tasarım kontrol listesine göre değerlendirmem gerekiyor. Bu araç o kontrolün gözü.
+
+**İlginç teknik detaylar:**
+- **Odak görüntüsü için neden önce Tab?** Tarayıcılar odak halkasını yalnızca klavye kullanan kişiye gösterir (`:focus-visible`).
+  Fareyle tıklayınca halka çıkmaz. Araç önce Tab'a basarak tarayıcıyı "klavye kipine" alır, sonra öğeye odaklanır.
+- **Derleme yok:** Node 26, TypeScript dosyalarını doğrudan çalıştırabiliyor (`node ui-snap/cli.ts`). Bu yüzden araç dosyaları
+  birbirini `.ts` uzantısıyla içe aktarıyor.
+- **Aracın testi bir hata buldu:** Her durum görüntüsünden önce sayfa yeniden yükleniyor; bu yüzden aynı konsol hatası 3 kez
+  sayılıyordu (test 5 uyarı beklerken 13 buldu ve kırmızıya döndü). Hataları tekrarsız tutacak şekilde düzelttik.
+
+**Öğrenilecek kavramlar:** duyarlı tasarım (responsive) ve kırılım noktaları, yatay taşma, `:focus-visible`, `data:` adresleriyle
+test sayfası kurmak, aracın kendisini test etmek.
+
+**Kendin dene:**
+```bash
+pnpm dev                                            # bir terminalde uygulamaları başlat
+pnpm ui:snap / --states hover,focus,menu            # ikinci terminalde (PowerShell). Git Bash'te başına MSYS_NO_PATHCONV=1 ekle
+```
+Sonra VS Code'da `.artifacts/screens/index/` klasörünü aç ve görüntülere bak (şimdilik boş beyaz sayfa — F1 ve F4'te dolacak).
+Panel için: `pnpm ui:snap / --base http://localhost:3001`.

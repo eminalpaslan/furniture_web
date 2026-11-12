@@ -7,7 +7,9 @@
     "e2e": "playwright test",
     "e2e:a11y": "playwright test --grep @a11y",
     "lint": "eslint . --max-warnings=0",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "ui:snap": "node ui-snap/cli.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
@@ -18,6 +20,7 @@
     "@playwright/test": "1.65.0",
     "@types/node": "26.6.6",
     "eslint": "10.14.0",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
   }
 }

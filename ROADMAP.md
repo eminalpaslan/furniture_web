@@ -70,7 +70,7 @@
 - **KK:** `pnpm test`, `pnpm e2e`, `pnpm e2e:a11y` çalışıyor; örnek entegrasyon testi gerçek Postgres container'ına bağlanıyor.
 - **Doğrula:** üç komutun çıktısı yeşil.
 
-### [ ] F0.7 Görsel öz-kontrol aracı (`ui:snap`)
+### [x] F0.7 Görsel öz-kontrol aracı (`ui:snap`)
 - **Bağımlılık:** F0.6
 - **Yap:** `pnpm ui:snap <rota> [--states hover,focus,menu] [--selector <css>]` → Playwright ile 375/768/1280/1440 genişlikte tam sayfa + belirtilen durumların ekran görüntüleri `.artifacts/screens/<rota-slug>/<genişlik>-<durum>.png`. Ayrıca her genişlikte yatay taşma kontrolü (`scrollWidth > clientWidth` → uyarı) ve konsol hatası listesi rapor edilir.
 - **KK:** Ana sayfa için 4+ görüntü üretiliyor; kasıtlı yatay taşma eklenince araç uyarı veriyor; konsol hatası raporlanıyor.

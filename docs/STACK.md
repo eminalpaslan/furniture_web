@@ -59,7 +59,7 @@
 
 | Paket | Sürüm | Kurulum | Not |
 |---|---|---|---|
-| vitest | 5.1.0 | F0.5 | env testleri için paket başına sade kuruldu; workspace düzeni F0.6 |
+| vitest | 5.1.0 | F0.5 | env testleri için paket başına sade kuruldu; api unit+integration projeleri F0.6; e2e (ui:snap birim) F0.7 |
 | @vitest/coverage-v8 | 5.1.0 | F0.6 | |
 | @testcontainers/postgresql | 12.2.1 | F0.6 | `testcontainers` çekirdeğini kendisi getirir |
 | supertest / @types/supertest | 7.3.2 / 7.2.1 | F0.6 | |

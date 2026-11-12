@@ -102,6 +102,11 @@
 - 2026-11-12 · pg@8.23.1 · örnek entegrasyon testinde gerçek bağlantı; Prisma 7'nin `@prisma/adapter-pg`'si de bunu kullanır (F2.2) · konteyner içinde `psql` çalıştırmak "bağlantı" kanıtı olarak zayıf
 - 2026-11-12 · @playwright/test@1.65.0, @axe-core/playwright@4.14.0 · e2e + a11y (CLAUDE.md §3) · —
 - 2026-11-12 · @vitest/eslint-plugin@1.6.28, eslint-plugin-playwright@2.12.2 · `.only`/`.skip` lint yasağı (CLAUDE.md §1-5) · —
+- 2026-11-12 · Karar (F0.7): `ui:snap` `e2e/ui-snap/` altında; derleme adımı olmadan Node 26'nın yerleşik TypeScript
+  çalıştırmasıyla (`node ui-snap/cli.ts`) çalışır — bu yüzden göreli importlar `.ts` uzantılı (`allowImportingTsExtensions`).
+  Çıktı: `.artifacts/screens/<slug>/<genişlik>-{full|hover|focus|menu}.png` + `report.json`. Taşma ve konsol hataları uyarıdır
+  (çıkış 0); sayfa açılamazsa / 5xx ise çıkış 1. Aynı hata yeniden yüklemelerde tekrar sayılmaz. Mevcut bir sunucuya bağlanır
+  (gerekirse `pnpm dev`); `--base http://localhost:3001` ile panel. `scripts/not-ready.mjs` son yer tutucu kalktığı için silindi.
 - 2026-11-12 · Karar (F0.6): "Vitest workspace" = `apps/api` içinde iki Vitest projesi (`unit`: `src/**/*.test.ts`,
   `integration`: `test/**/*.int.test.ts`); diğer paketler tek proje. Turborepo paket başına `vitest run` çalıştırır.
   Nest DI metadatası Vitest'te ek eklenti olmadan çalışıyor (Vite 8 dönüştürücüsü tsconfig `emitDecoratorMetadata`'yı okuyor —

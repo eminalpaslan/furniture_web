@@ -1,9 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
-    ".": {
-      "entry": ["scripts/*.mjs"]
-    },
     "apps/api": {
       "entry": ["src/main.ts", "src/main.worker.ts"]
     },

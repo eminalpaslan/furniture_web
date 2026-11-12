@@ -26,7 +26,7 @@
     "e2e": "turbo run e2e",
     "e2e:a11y": "turbo run e2e:a11y",
     "e2e:install": "pnpm --filter @mobilya/e2e exec playwright install chromium",
-    "ui:snap": "node scripts/not-ready.mjs ui:snap F0.7",
+    "ui:snap": "pnpm --filter @mobilya/e2e ui:snap",
     "knip": "knip",
     "prepare": "husky"
   },
