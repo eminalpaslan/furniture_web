@@ -93,6 +93,12 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | **Birim testi (unit test)** | Tek bir fonksiyonu yalıtılmış olarak deneyen küçük otomatik test. |
 | **Süreç testi** | Uygulamayı gerçekten ayrı bir program olarak başlatıp davranışını (çıkış kodu, ekrana yazdığı) kontrol eden test. |
 | **Çıkış kodu (exit code)** | Program kapanırken bıraktığı sayı: `0` = başarılı, `1` (veya başka) = hata. Otomasyon araçları buna bakar. |
+| **Entegrasyon testi** | Birden çok parçanın (kod + gerçek veritabanı + HTTP) birlikte doğru çalıştığını deneyen test. |
+| **E2E (uçtan uca) testi** | Gerçek tarayıcıda, gerçek kullanıcı gibi siteyi gezen test. |
+| **Mock (sahte)** | Testte gerçek bir parçanın yerine konan taklit. Hızlıdır ama gerçek hataları gizleyebilir. |
+| **Erişilebilirlik (a11y)** | Sitenin görme, işitme, hareket engelli kullanıcılar dahil herkes tarafından kullanılabilmesi. "a11y" = a + 11 harf + y. |
+| **WCAG** | Web erişilebilirlik standardı. Hedefimiz WCAG 2.2 AA seviyesi. |
+| **Coverage (kapsam)** | Testlerin kodun yüzde kaçını çalıştırdığı. Ödeme/sepet gibi kritik modüllerde hedef ≥ %85. |
 
 ---
 
@@ -170,8 +176,13 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | `src/main.ts` | API'nin **giriş noktası**: önce ortamı doğrular, sonra uygulamayı kurar ve `API_PORT`'u (4000) dinler. | F0.4 |
 | `src/env.ts` | API ve worker'ın ortam değişkenleri şeması: veritabanı, Redis, arama, S3, SMTP adresleri. | F0.5 |
 | `src/env.test.ts` | Şema testleri: her zorunlu değişken eksikken adıyla reddediliyor mu? | F0.5 |
-| `src/startup.test.ts` | **Derlenmiş** API ve worker'ı `DATABASE_URL` olmadan gerçekten başlatır; "eksik" deyip 1 koduyla kapandığını kontrol eder. | F0.5 |
-| `src/testing/valid-env.ts` | Testlerde kullanılan örnek geçerli ortam. Derlemeye girmez. | F0.5 |
+| `test/` | **Entegrasyon testleri** (`*.int.test.ts`): gerçek veritabanı, gerçek HTTP isteği, gerçek süreç. `src/` içindeki `*.test.ts` ise birim testleri. | F0.6 |
+| `test/startup.int.test.ts` | **Derlenmiş** API ve worker'ı `DATABASE_URL` olmadan gerçekten başlatır; "eksik" deyip 1 koduyla kapandığını kontrol eder. | F0.5 |
+| `test/postgres.int.test.ts` | Docker'da geçici bir Postgres açar, bağlanır, Türkçe karakterli veri yazıp okur. | F0.6 |
+| `test/health.int.test.ts` | API'yi test modunda kurar, `GET /health/live`'a gerçek HTTP isteği atar (200), olmayan adrese 404. | F0.6 |
+| `test/support/postgres.ts` | Testler için geçici Postgres konteyneri başlatan yardımcı (Testcontainers). | F0.6 |
+| `test/support/valid-env.ts` | Testlerde kullanılan örnek geçerli ortam. Derlemeye girmez. | F0.5 |
+| `vitest.config.ts` | İki test projesi: `unit` (hızlı) ve `integration` (Docker ister); kapsam (coverage) ayarı. | F0.6 |
 | `tsconfig.build.json` | `nest build`'in kullandığı derleme ayarı (test dosyalarını dışarıda bırakır). | F0.5 |
 | `src/main.worker.ts` | **İşçi (worker)** sürecinin giriş noktası: e-posta gönderme, arama indeksleme gibi arka plan işleri burada çalışacak (F2.6). | F0.4 |
 | `src/app.module.ts` | API'nin **kök modülü**: bütün özellik modüllerini (health, ileride catalog, cart, orders…) bir araya getirir. | F0.4 |
@@ -180,6 +191,17 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | `src/health/health.module.ts` | Health controller'ını paketleyen modül. | F0.4 |
 | `nest-cli.json` | Nest CLI ayarı: kaynak `src/`, derleyici `tsc`. | F0.4 |
 | `dist/` | Derlenmiş JavaScript — **otomatik**, git'e girmez. | F0.4 |
+
+### `e2e/` içi (Playwright)
+
+| Dosya | Ne işe yarar? | Görev |
+|---|---|---|
+| `playwright.config.ts` | Tarayıcı testlerinin ayarı: hangi tarayıcı, Türkçe dil/saat dilimi, testlerden önce hangi sunucuların başlatılacağı. | F0.6 |
+| `tests/*.spec.ts` | Tarayıcı testleri. `home.spec.ts`: ana sayfa ve panel; `a11y-helper.spec.ts`: denetim aracının kendisini test eder. | F0.6 |
+| `support/a11y.ts` | `expectNoA11yViolations(page)`: sayfayı axe ile tarar, ciddi/kritik ihlalde testi düşürür. | F0.6 |
+| `support/messages.ts` | Testler sayfa metnini uygulamanın `messages/tr.json` dosyasından okur (metin değişse de test bozulmaz). | F0.6 |
+| `support/urls.ts` | Uygulama adresleri (3000, 3001, 4000). | F0.6 |
+| `playwright-report/`, `test-results/` | Test raporu ve hata anındaki ekran görüntüleri — **otomatik**, git'e girmez. | F0.6 |
 
 ### Klasörler
 
@@ -346,6 +368,35 @@ git commit -m "..."
   });
   ```
 - **Komutlar:** `pnpm test` (hepsi), `pnpm --filter @mobilya/utils test` (tek paket). İzleme modu için paket klasöründe `pnpm exec vitest`.
+  API'de: `pnpm --filter @mobilya/api test:unit` (yalnız birim), `test:int` (yalnız entegrasyon), `test:coverage` (kapsam raporu).
+
+### Test piramidi — hangi test ne zaman?
+```
+            ▲  E2E (Playwright)          az, yavaş, en gerçekçi: tarayıcı açıp müşteri gibi gezer
+           ▲▲▲ Entegrasyon (Vitest)      orta: gerçek veritabanı, gerçek HTTP isteği
+         ▲▲▲▲▲▲ Birim (Vitest)           çok, hızlı: tek fonksiyon (ör. fiyat hesabı)
+```
+- **Birim:** "Takım fiyatından 1 parça çıkarınca toplam doğru mu?" — milisaniyeler sürer, yüzlercesi olur.
+- **Entegrasyon:** "Sipariş kaydı veritabanına gerçekten yazılıyor mu? Aynı anda 20 kişi son ürünü alırsa 1 kişi mi alır?" — saniyeler.
+- **E2E:** "Müşteri ana sayfadan ürüne, sepete, ödemeye gidebiliyor mu?" — en yavaşı, en az sayıda.
+
+### Testcontainers
+- **Ne:** Test başlarken Docker'da **geçici** bir servis (bizde Postgres) açar, test bitince siler.
+- **Neden:** Sahte (mock) veritabanı, gerçeğin davranışını taklit eder ama birebir değildir — gerçek hatalar ancak gerçek
+  veritabanında görünür. Lokal `pnpm infra:up` veritabanına da dokunmaz, her test dosyası tertemiz bir veritabanıyla başlar.
+- Docker Desktop açık değilse entegrasyon testleri hata verir.
+
+### Supertest + @nestjs/testing
+- API'yi port açmadan bellekte kurup ona gerçek HTTP isteği atmayı sağlar: `request(app.getHttpServer()).get('/health/live')`.
+
+### Playwright (e2e) ve axe (erişilebilirlik)
+- **Playwright:** Gerçek bir tarayıcıyı (Chromium) kodla yönetir: sayfaya git, tıkla, yaz, "şu yazı görünüyor mu?" diye bak.
+  `e2e/playwright.config.ts` testlerden önce üç uygulamayı kendisi başlatır (`webServer`).
+- **axe:** Sayfayı engelli kullanıcılar açısından tarar (görselde alternatif metin var mı, renk kontrastı yeterli mi, klavyeyle
+  kullanılabilir mi…). Kuralımız: **ciddi** veya **kritik** ihlal varsa test düşer. Hedef standart: WCAG 2.2 AA.
+- **Testi test etmek:** `tests/a11y-helper.spec.ts`, alternatif metni olmayan bir görselle sahte sayfa kurar ve yardımcımızın
+  bunu **yakaladığını** doğrular. Hiçbir şey yakalamayan bir denetim, hiç denetim olmamasından daha kötüdür: yanlış güven verir.
+- **Etiketler:** Erişilebilirlik testleri `@a11y` etiketli; `pnpm e2e:a11y` yalnızca onları çalıştırır.
 
 ### Docker Compose ve lokal servislerimiz
 Sitemizin arka ucu 5 yardımcı servise ihtiyaç duyar. Hepsini bilgisayarına tek tek kurmak yerine Docker konteynerlerinde çalıştırıyoruz:
@@ -397,6 +448,9 @@ Sitemizin arka ucu 5 yardımcı servise ihtiyaç duyar. Hepsini bilgisayarına t
 | `pnpm infra:up` / `infra:down` / `infra:reset` | Lokal servisleri başlat / durdur / verileri silip sıfırla | F0.3 |
 | `pnpm test` | Bütün otomatik testleri çalıştırır | F0.5 |
 | `cp .env.example .env` | İlk kurulumda lokal ayar dosyasını oluşturur | F0.5 |
+| `pnpm e2e:install` | Playwright'ın tarayıcısını (Chromium) indirir — ilk kurulumda bir kez | F0.6 |
+| `pnpm e2e` / `pnpm e2e:a11y` | Uygulamaları derleyip tarayıcı testlerini / yalnızca erişilebilirlik testlerini çalıştırır | F0.6 |
+| `pnpm --filter @mobilya/e2e exec playwright show-report` | Son e2e çalıştırmasının görsel raporunu tarayıcıda açar | F0.6 |
 
 ---
 
@@ -587,3 +641,38 @@ pnpm --filter @mobilya/api start           # → "DATABASE_URL: eksik (zorunlu)"
 ```
 Deneyden sonra `#` işaretini geri kaldır. Ardından `.env.example` dosyasını baştan sona oku — sitenin hangi dış servislere
 bağlandığını tek sayfada görürsün.
+
+### F0.6 · Test altyapısı (2026-11-12)
+
+**Ne yaptık?**
+1. API testlerini ikiye ayırdık: **birim** (`src/**/*.test.ts`, hızlı) ve **entegrasyon** (`test/**/*.int.test.ts`, Docker ister).
+2. **Testcontainers** ile her test için geçici, gerçek bir Postgres açan yardımcı yazdık; örnek test bağlanıp Türkçe veri yazıp okuyor.
+3. API'nin `/health/live` adresi için gerçek HTTP isteği atan ilk entegrasyon testini yazdık (Supertest).
+4. **Playwright**'ı kurduk: testlerden önce üç uygulamayı derleyip başlatıyor, ana sayfaları açıp kontrol ediyor.
+5. **axe** ile erişilebilirlik denetimi yardımcısını yazdık ve denetimin gerçekten çalıştığını ayrı bir testle kanıtladık.
+6. `.only` ve `.skip` kullanımını lint ile yasakladık.
+
+**Neden böyle?**
+- **`.only` neden tehlikeli?** Bir test dosyasında `it.only(...)` unutulursa, test aracı **sadece o testi** çalıştırır ve geri
+  kalan yüzlerce testi sessizce atlar — sonuç yine "yeşil" görünür. `.skip` da bir testi kalıcı olarak susturur. İkisi de
+  "sahte başarı" yaratır; bu yüzden lint hatası.
+- **Neden mock değil gerçek Postgres?** İleride "aynı anda 20 kişi son ürünü almaya çalışırsa yalnızca 1 kişi alabilmeli" gibi
+  testler yazacağız (F6.3). Bu tür eşzamanlılık davranışlarını ancak gerçek veritabanı doğru gösterir.
+- **Testler de koddur:** Bu görevde lint, test kodumuzda iki gerçek sorun buldu: `getHttpServer()` `any` döndürüyordu (tip
+  güvenliği delinmişti) ve gereksiz bir bağımlılık vardı. Test kodu da aynı kalite kurallarına tabi.
+- **Önemli bir doğrulama:** NestJS, bağımlılık enjeksiyonu için TypeScript'in "dekoratör metadatası" özelliğine ihtiyaç duyar;
+  bazı test araçları bunu üretmez ve testler gizemli biçimde kırılır. Bunu sonra şaşırmamak için **şimdi** küçük bir deneme
+  testiyle kontrol ettik: çalışıyor. Riskleri erkenden, ucuzken test etmek iyi bir alışkanlıktır.
+
+**Öğrenilecek kavramlar:** test piramidi (birim / entegrasyon / e2e), Testcontainers, mock'un sınırları, Playwright, axe ve WCAG,
+`.only`/`.skip` tehlikesi, kapsam (coverage).
+
+**Kendin dene** (Docker Desktop açık olmalı):
+```bash
+pnpm test                                        # 30 test; Postgres konteynerinin açılıp kapandığını Docker Desktop'ta izleyebilirsin
+pnpm e2e                                         # tarayıcı testleri (ilk seferde önce: pnpm e2e:install)
+pnpm --filter @mobilya/e2e exec playwright show-report   # renkli raporu tarayıcıda aç
+pnpm --filter @mobilya/api test:coverage         # kodun yüzde kaçı testli? (apps/api/coverage/index.html'i de açabilirsin)
+```
+Bir deney: `e2e/tests/home.spec.ts` içinde `toHaveAttribute('lang', 'tr')` satırındaki `'tr'`yi `'en'` yap, `pnpm e2e` çalıştır →
+testin kırmızıya döndüğünü ve raporda nedenini gör. Sonra geri al.

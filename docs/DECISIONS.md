@@ -98,4 +98,13 @@
   bayrağıyla okur (üretimde dosya okuma kod yolu yok; süreç testi uygulamayı dosyasız başlatabilir). Next uygulamaları
   `next.config.ts` içinde `loadEnvFileIfExists` ile okur (Next'te bayrak yok). Ortak doğrulama `@mobilya/utils/env`
   (`parseEnv`, `parseEnvOrExit`); hata mesajı değer değil yalnızca değişken adı ve nedeni içerir.
-- 2026-11-12 · Not: `.only`/`.skip` yasağı test eklentisiyle (eslint-plugin-vitest / playwright) F0.6'da eklenecek.
+- 2026-11-12 · @testcontainers/postgresql@12.2.1, supertest@7.3.2, @nestjs/testing@12.5.0, @vitest/coverage-v8@5.1.0 · entegrasyon testleri (CLAUDE.md §3) · —
+- 2026-11-12 · pg@8.23.1 · örnek entegrasyon testinde gerçek bağlantı; Prisma 7'nin `@prisma/adapter-pg`'si de bunu kullanır (F2.2) · konteyner içinde `psql` çalıştırmak "bağlantı" kanıtı olarak zayıf
+- 2026-11-12 · @playwright/test@1.65.0, @axe-core/playwright@4.14.0 · e2e + a11y (CLAUDE.md §3) · —
+- 2026-11-12 · @vitest/eslint-plugin@1.6.28, eslint-plugin-playwright@2.12.2 · `.only`/`.skip` lint yasağı (CLAUDE.md §1-5) · —
+- 2026-11-12 · Karar (F0.6): "Vitest workspace" = `apps/api` içinde iki Vitest projesi (`unit`: `src/**/*.test.ts`,
+  `integration`: `test/**/*.int.test.ts`); diğer paketler tek proje. Turborepo paket başına `vitest run` çalıştırır.
+  Nest DI metadatası Vitest'te ek eklenti olmadan çalışıyor (Vite 8 dönüştürücüsü tsconfig `emitDecoratorMetadata`'yı okuyor —
+  constructor injection deneme testiyle doğrulandı). e2e paketi uygulamalara `workspace:*` ile bağlı: tek amacı turbo'nun
+  `e2e` öncesi `^build` ile onları derlemesi (knip'te `ignoreDependencies`). a11y: WCAG 2.0/2.1/2.2 A+AA etiketleri,
+  ciddi/kritik = hata; yardımcının ihlal yakaladığı ayrı bir testle kanıtlanır.

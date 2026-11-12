@@ -64,7 +64,7 @@
 - **KK:** Zorunlu bir değişken silinince uygulama hangi değişkenin eksik olduğunu söyleyerek kapanıyor (testle).
 - **Doğrula:** `pnpm test` (env testleri).
 
-### [ ] F0.6 Test altyapısı
+### [x] F0.6 Test altyapısı
 - **Bağımlılık:** F0.4
 - **Yap:** Vitest workspace (birim + entegrasyon projeleri), Testcontainers yardımcıları, Playwright (`e2e/`, webServer ile uygulamaları başlatır), `@axe-core/playwright` yardımcı fonksiyonu (`expectNoA11yViolations(page)`), örnek birer test.
 - **KK:** `pnpm test`, `pnpm e2e`, `pnpm e2e:a11y` çalışıyor; örnek entegrasyon testi gerçek Postgres container'ına bağlanıyor.

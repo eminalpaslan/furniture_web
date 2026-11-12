@@ -5,8 +5,9 @@
 
 ## Mevcut durum
 - **Faz:** F0 — devam ediyor
-- **Son tamamlanan görev:** F0.5
-- **`pnpm verify` son durumu:** ✔ 2026-11-12 — 19/19 görev, 26/26 test (utils 10, api 10, web 3, admin 3)
+- **Son tamamlanan görev:** F0.6
+- **`pnpm verify` son durumu:** ✔ 2026-11-12 — 21/21 görev, 30/30 test (utils 10, api 14 [unit 8 + entegrasyon 6], web 3, admin 3);
+  `pnpm e2e` 5/5, `pnpm e2e:a11y` 3/3. Entegrasyon testleri için Docker Desktop açık olmalı.
 - **Lokal kurulum notu:** `pnpm verify` ve `pnpm dev` kökte `.env` ister (`cp .env.example .env`); yoksa web/admin build'i
   `API_URL: eksik` diyerek durur — bu bilinçli (F0.5).
 - **Ortam notu:** Sistem Node'u 22.18.0; proje Node 26.13.1'i pnpm `devEngines` ile kullanıyor (ADR-005).
@@ -23,10 +24,10 @@
 - **Notlar / riskler:** —
 
 ## Sonraki görevlere devredilen notlar
-- F0.6: Vitest'i workspace düzenine (birim + entegrasyon) taşı; mevcut paket başı `vitest.config.ts`'ler oraya bağlanır.
 - F0.8: Turborepo 2 katı env modunda çalışır → CI'da `API_URL`, `DATABASE_URL` vb. için `turbo.json`'a `passThroughEnv`/`env`
-  eklenmeli; CI'da `.env` yerine iş akışı ortam değişkenleri kullanılır. `@mobilya/api#test`, `build`'e bağımlı (süreç testi).
-- F0.6: `GET /health/live` için entegrasyon testi (örnek Supertest testi) yazılacak; `.only`/`.skip` lint yasağı eklenecek.
+  eklenmeli; CI'da `.env` yerine iş akışı ortam değişkenleri kullanılır. `@mobilya/api#test`, `build`'e bağımlı (süreç testi);
+  entegrasyon testleri Docker ister (GitHub ubuntu runner'da var). CI'da `pnpm e2e:install` (Chromium) adımı gerekir.
+- Domain modülleri (pricing, cart, …) geldikçe `apps/api/vitest.config.ts` → `coverage.thresholds` ile ≥ %85 eşik (CLAUDE.md §4.1 G3).
 - F2.1: API yanıtlarında `X-Powered-By: Express` var → helmet ile kaldırılacak (zaten F2.1 kapsamında).
 - Windows notu: `pnpm dev` arka planda durdurulunca node alt süreçleri 3000/3001/4000'i tutmaya devam edebiliyor → PID ile kapat.
 
@@ -65,6 +66,24 @@ _(yok)_
 > - Kanıt: `pnpm verify` → yeşil (typecheck 0, lint 0, test 12/12, build OK)
 > - Görsel kontrol: (UI ise) `[rota] 10/10 ✔` veya bulgular
 > - Not: …
+
+### 2026-11-12 · F0.6 Test altyapısı — ✔
+- Yapılanlar: `apps/api` Vitest projeleri `unit` + `integration`; `test/support/postgres.ts` (Testcontainers, compose ile aynı
+  `postgres:18.6-alpine3.24`), `test/support/valid-env.ts`; örnek testler `test/postgres.int.test.ts` (pg ile gerçek bağlantı,
+  sürüm 18, Türkçe karakter yaz/oku), `test/health.int.test.ts` (@nestjs/testing + Supertest: 200 ve 404), `startup.test.ts` →
+  `test/startup.int.test.ts`. Coverage: `@vitest/coverage-v8` + `test:coverage`. `e2e/`: `playwright.config.ts` (webServer: api/web/admin
+  derlenmiş, `reuseExistingServer` lokal), `support/a11y.ts` (`expectNoA11yViolations`), `support/messages.ts`, `support/urls.ts`,
+  `tests/home.spec.ts`, `tests/a11y-helper.spec.ts`. turbo `e2e`/`e2e:a11y` (`^build`, önbelleksiz, `CI` geçişli). Kök: `e2e`, `e2e:a11y`,
+  `e2e:install`. Lint: `.only`/`.skip` yasağı (vitest + playwright eklentileri), `expect…` yardımcıları beklenti sayılır.
+- Kanıt:
+  - KK `pnpm test`: 21/21 görev; api 14/14 (Postgres konteyneri gerçekten başlatıldı, `SHOW server_version_num` → 18…).
+  - KK `pnpm e2e`: 5/5 (lang=tr, başlık, admin noindex, iki a11y taraması, yardımcı `image-alt (critical)` yakalıyor).
+  - KK `pnpm e2e:a11y`: 3/3.
+  - Nest constructor injection Vitest'te çalışıyor (geçici deneme testi geçti, silindi).
+  - `.only`/`.skip` deneme dosyaları → `vitest/no-focused-tests`, `vitest/no-disabled-tests`, `playwright/no-focused-test`,
+    `playwright/no-skipped-test` hataları (silindi). `pnpm knip` temiz, `pnpm format:check` temiz.
+- Yolda düzeltilenler: `getHttpServer()` `any` döndürüyordu → `INestApplication<Server>`; knip: doğrudan `testcontainers`
+  gereksizdi (kaldırıldı).
 
 ### 2026-11-12 · F0.5 Ortam değişkeni doğrulama — ✔
 - Yapılanlar: `packages/utils` artık derlenen paket (`tsc` → `dist`, `exports["./env"]`): `parseEnv`, `parseEnvOrExit`,

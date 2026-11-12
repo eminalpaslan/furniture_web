@@ -1,8 +1,8 @@
 import { EnvValidationError, parseEnv } from '@mobilya/utils/env';
 import { describe, expect, it } from 'vitest';
 
+import { validApiEnv } from '../test/support/valid-env.js';
 import { apiEnvSchema } from './env.js';
-import { validApiEnv } from './testing/valid-env.js';
 
 function withoutKey(key: keyof typeof validApiEnv): Record<string, string> {
   return Object.fromEntries(Object.entries(validApiEnv).filter(([name]) => name !== key));

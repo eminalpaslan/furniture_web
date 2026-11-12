@@ -1,8 +1,10 @@
 // @ts-check
 import js from '@eslint/js';
 import eslintComments from '@eslint-community/eslint-plugin-eslint-comments/configs';
+import vitest from '@vitest/eslint-plugin';
 import { defineConfig } from 'eslint/config';
 import prettier from 'eslint-config-prettier';
+import playwright from 'eslint-plugin-playwright';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
@@ -65,6 +67,25 @@ export function baseConfig(tsconfigRootDir) {
             message: ARBITRARY_MESSAGE,
           },
         ],
+      },
+    },
+    // Testler: `.only` (diğer testleri sessizce atlatır) ve `.skip` yasak (CLAUDE.md §1-5).
+    {
+      files: ['**/*.test.{ts,tsx}'],
+      extends: [vitest.configs.recommended],
+      rules: {
+        'vitest/no-focused-tests': 'error',
+        'vitest/no-disabled-tests': 'error',
+      },
+    },
+    {
+      files: ['**/*.spec.ts'],
+      extends: [playwright.configs['flat/recommended']],
+      rules: {
+        'playwright/no-focused-test': 'error',
+        'playwright/no-skipped-test': 'error',
+        // `expect…` ile başlayan yardımcılarımız (ör. expectNoA11yViolations) içlerinde beklenti barındırır.
+        'playwright/expect-expect': ['warn', { assertFunctionPatterns: ['^expect[A-Z]'] }],
       },
     },
     // En sonda: biçimlendirmeyle ilgili kuralları kapatır, biçim işini Prettier'a bırakır.

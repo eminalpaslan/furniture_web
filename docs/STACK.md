@@ -61,10 +61,14 @@
 |---|---|---|---|
 | vitest | 5.1.0 | F0.5 | env testleri için paket başına sade kuruldu; workspace düzeni F0.6 |
 | @vitest/coverage-v8 | 5.1.0 | F0.6 | |
-| testcontainers / @testcontainers/postgresql | 12.2.1 | F0.6 | |
-| supertest | 7.3.2 | F0.6 | |
-| @playwright/test | 1.65.0 | F0.6 | |
+| @testcontainers/postgresql | 12.2.1 | F0.6 | `testcontainers` çekirdeğini kendisi getirir |
+| supertest / @types/supertest | 7.3.2 / 7.2.1 | F0.6 | |
+| @nestjs/testing | 12.5.0 | F0.6 | |
+| pg / @types/pg | 8.23.1 | F0.6 | Şimdilik örnek entegrasyon testi; F2.2'de Prisma sürücü adaptörü |
+| @playwright/test | 1.65.0 | F0.6 | Chromium: `pnpm e2e:install` |
 | @axe-core/playwright | 4.14.0 | F0.6 | |
+| @vitest/eslint-plugin | 1.6.28 | F0.6 | `.only`/`.skip` yasağı |
+| eslint-plugin-playwright | 2.12.2 | F0.6 | `.only`/`.skip` yasağı |
 | fast-check | 4.10.2 | F2.3 | |
 | eslint | 10.14.0 | F0.2 | |
 | typescript-eslint | 8.72.2 | F0.2 | peer: `typescript >=4.8.4 <6.1.0` |

@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { validApiEnv } from './testing/valid-env.js';
+import { validApiEnv } from './support/valid-env.js';
 
 // Derlenmiş süreçleri (`pnpm build` çıktısı) gerçek bir alt süreç olarak başlatır: kabul kriteri
 // "zorunlu değişken silinince uygulama hangi değişkenin eksik olduğunu söyleyerek kapanıyor" (ROADMAP F0.5).

@@ -21,6 +21,16 @@
     "@mobilya/api#test": {
       "dependsOn": ["build"],
       "outputs": ["coverage/**"]
+    },
+    "e2e": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "passThroughEnv": ["CI"]
+    },
+    "e2e:a11y": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "passThroughEnv": ["CI"]
     }
   }
 }

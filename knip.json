@@ -6,6 +6,9 @@
     },
     "apps/api": {
       "entry": ["src/main.ts", "src/main.worker.ts"]
+    },
+    "e2e": {
+      "ignoreDependencies": ["@mobilya/web", "@mobilya/admin", "@mobilya/api"]
     }
   }
 }
