@@ -20,9 +20,14 @@
 ## Aktif görev
 > Görev başlarken doldurulur, bitince temizlenir.
 
-- **ID / başlık:** —
-- **Plan:**
-  1. —
+- **ID / başlık:** F0.9 Faz denetimi (README yazıldı ve temiz klonda denendi; bağımsız denetim raporu alındı)
+- **Plan (denetim bulguları):**
+  1. turbo `lint` → `dependsOn: ["^build"]`; `globalDependencies: [".env"]`.
+  2. docker-compose portları `127.0.0.1`'e bağlanır.
+  3. Token lint kuralı: Tailwind v4 `(--x)`, `[özellik:değer]`, sondaki `!`; `.ts/.js` dosyalarına da uygulanır.
+  4. Next: kök `.env`'den yalnızca şemadaki değişkenler yüklenir; `next.config` kapanma davranışı testli.
+  5. API/worker `bootstrap` hatası → log + exit 1. a11y: best-practice etiketi + engellemeyen bulgular rapora; CI `failOnFlakyTests`.
+  6. Belgeler: ADR (allowBuilds), ROADMAP'e ertelenenler, README, STACK, .env.example yorumları, OGRENME. Sonra tüm kapılar + temiz klonda `pnpm lint`.
 - **Notlar / riskler:** —
 
 ## Sonraki görevlere devredilen notlar

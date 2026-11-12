@@ -5,6 +5,7 @@ import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module.js';
 import { readApiEnvOrExit } from './env.js';
+import { runBootstrap } from './run-bootstrap.js';
 
 async function bootstrap(): Promise<void> {
   const env = readApiEnvOrExit();
@@ -15,4 +16,4 @@ async function bootstrap(): Promise<void> {
   Logger.log(`API listening on http://localhost:${String(env.API_PORT)}`, 'Bootstrap');
 }
 
-void bootstrap();
+runBootstrap(bootstrap);

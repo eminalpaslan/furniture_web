@@ -29,6 +29,7 @@ pnpm infra:up                # Postgres, Redis, Meilisearch, S3 (RustFS), Mailpi
 pnpm e2e:install             # Playwright için Chromium (bir kez)
 
 pnpm verify                  # tip + lint + test + build — hepsi yeşil olmalı
+pnpm e2e                     # tarayıcı + erişilebilirlik testleri — hepsi yeşil olmalı
 pnpm dev                     # web :3000, admin :3001, api :4000
 ```
 
@@ -58,7 +59,8 @@ Kurulum doğru ise:
 
 ## Portlar
 
-Lokal servisler başka projelerle çakışmasın diye "1 + standart port" kuralıyla yayınlanır; hepsi `.env` ile değiştirilebilir.
+Lokal servisler başka projelerle çakışmasın diye "1 + standart port" kuralıyla ve **yalnızca `127.0.0.1`** üzerinde
+yayınlanır (geliştirme şifreleri herkesçe bilindiği için aynı ağdaki başka cihazlar erişemez); hepsi `.env` ile değiştirilebilir.
 
 | Servis | Port |
 |---|---|

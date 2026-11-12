@@ -1,4 +1,5 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { parseEnv as parseEnvFile } from 'node:util';
 
 import type { z } from 'zod';
 
@@ -63,9 +64,15 @@ export function parseEnvOrExit<TSchema extends z.ZodObject>(
 }
 
 /**
- * Dosya varsa içindeki değişkenleri `process.env`'e yükler; zaten tanımlı değişkenlerin üzerine yazmaz.
- * Lokal geliştirmede kökteki `.env` için kullanılır; sunucularda dosya bulunmaz ve değerler ortamdan gelir.
+ * Dosya varsa içindeki değişkenlerden yalnızca `keys` listesindekileri `process.env`'e yükler; zaten tanımlı
+ * değişkenlerin üzerine yazmaz. Lokal geliştirmede kökteki ortak `.env` için kullanılır: her süreç yalnızca kendi
+ * şemasındaki değerleri alır (vitrin süreci veritabanı şifresini görmez — en az yetki). Sunucularda dosya bulunmaz.
  */
-export function loadEnvFileIfExists(path: string): void {
-  if (existsSync(path)) process.loadEnvFile(path);
+export function loadEnvFileIfExists(path: string, keys: readonly string[]): void {
+  if (!existsSync(path)) return;
+  const values = parseEnvFile(readFileSync(path, 'utf8'));
+  for (const key of keys) {
+    const value = values[key];
+    if (value !== undefined && process.env[key] === undefined) process.env[key] = value;
+  }
 }

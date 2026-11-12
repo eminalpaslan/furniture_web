@@ -4,6 +4,7 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { readApiEnvOrExit } from './env.js';
+import { runBootstrap } from './run-bootstrap.js';
 import { WorkerModule } from './worker.module.js';
 
 // Kuyruk işçisi ayrı bir süreçtir: HTTP sunucusu açmaz, yalnızca uygulama bağlamını (DI) kurar.
@@ -16,4 +17,4 @@ async function bootstrap(): Promise<void> {
   Logger.log('Worker started', 'Bootstrap');
 }
 
-void bootstrap();
+runBootstrap(bootstrap);

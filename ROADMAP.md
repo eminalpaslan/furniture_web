@@ -97,6 +97,12 @@
 - **KK:** Tailwind'de `bg-red-500` gibi token dışı sınıf derlenmiyor; kontrast scripti tablodaki tüm değerleri ±0,01 doğrulukla üretiyor.
 - **Doğrula:** `pnpm tokens:contrast`; token dışı sınıf içeren örnek bileşenle build'in uyarı/hata verdiğini gör.
 
+### [ ] F1.1a CSS tarafında token denetimi (F0 denetiminden)
+- **Bağımlılık:** F1.1
+- **Yap:** `.css` dosyalarında ham hex/`rgb()` ve token dışı `@apply` keyfi değerlerini yakalayan denetim (stylelint veya küçük betik — seçim
+  `DECISIONS.md`'ye); token kaynak dosyalarının (`packages/ui/tokens`) ESLint hex kuralından muaf tutulması.
+- **KK:** Kasıtlı hatalı CSS dosyası `pnpm lint`'te hata veriyor; token kaynağı lint'ten geçiyor.
+
 ### [ ] F1.2 Fontlar ve tipografi
 - **Bağımlılık:** F1.1
 - **Yap:** `next/font` ile Inter + Fraunces (`latin-ext`), tipografi ölçeği bileşenleri (`Heading`, `Text`), `tabular-nums` yardımcı sınıfı.
@@ -153,6 +159,12 @@
 - **KK:** Geçersiz istek → 400 Problem Details + alan hataları; bilinmeyen hata → 500, iç detay sızdırmıyor; loglarda `password`, `token`, `tckn` alanları maskeli (testli); modül sınırı ihlali lint hatası veriyor.
 - **Doğrula:** `pnpm test` (entegrasyon), `pnpm lint`.
 
+### [ ] F2.1a API öneki ve üretim ortamı sertleştirmesi (F0 denetiminden)
+- **Bağımlılık:** F2.1
+- **Yap:** `ARCHITECTURE §4` gereği global `/v1` öneki (`/health/*` hariç, karar `DECISIONS.md`'ye); env şemasında `NODE_ENV=production`
+  iken `.env.example`'daki örnek şifrelerin ve TLS'siz Redis'in reddedilmesi.
+- **KK:** `GET /v1/...` çalışıyor, `/health/live` öneksiz; production modunda örnek şifreyle süreç açılmıyor (testli).
+
 ### [ ] F2.2 Prisma ve temel şema
 - **Bağımlılık:** F2.1
 - **Yap:** `ARCHITECTURE §3.1` + `§3.6` platform tabloları (User, Role, Permission, UserRole, RefreshToken, Consent, AuditLog, OutboxEvent, IdempotencyKey, Setting). İlk migration. Seed çatısı (`pnpm db:seed`, idempotent).
@@ -164,6 +176,12 @@
 - **Yap:** Ortak Zod şemaları ve hata kodu listesi; `money.ts` (formatTRY, allocate, applyPercent, tax), `slug.ts` (Türkçe), `phone.ts`, `dates.ts` (iş günü hesabı, Europe/Istanbul).
 - **KK:** `allocate` için fast-check özelliği: toplam her zaman korunur, negatif yok; `formatTRY(849000)` → `8.490,00 TL`; `slugify('Işıklı Gardırop Çekmeceli')` → `isikli-gardirop-cekmeceli`; para modülü kapsamı %100.
 - **Doğrula:** `pnpm test --coverage`.
+
+### [ ] F2.3a Kapsam eşikleri (F0 denetiminden)
+- **Bağımlılık:** F2.3
+- **Yap:** Vitest `coverage.thresholds`: `packages/utils` para modülü %100; domain modülleri (`pricing`, `cart`, `checkout`, `orders`,
+  `inventory`, `payments`) oluşturuldukları görevde ≥ %85 eşiğiyle config'e eklenir (CLAUDE.md §4.1 G3). CI'da kapsamlı test adımı.
+- **KK:** Eşiğin altına düşen kapsam `pnpm test`'i (ve CI'ı) kırmızı yapıyor (kasıtlı deneme ile görüldü).
 
 ### [ ] F2.4 Kimlik doğrulama
 - **Bağımlılık:** F2.2, F2.3
@@ -270,6 +288,12 @@
 - **Yap:** Tipli API istemcisi (cevap `contracts` ile doğrulanır), etiketli `fetch` (`ARCHITECTURE §9`), hata kodu → Türkçe mesaj eşlemesi (`messages/tr.json`), TanStack Query sağlayıcısı, `error.tsx`/`not-found.tsx` şablonları.
 - **KK:** Bilinmeyen hata kodu genel mesaja düşüyor; şema uyumsuzluğu geliştirmede görünür hata veriyor.
 - **Doğrula:** birim testleri.
+
+### [ ] F4.1a Sunucuya özel doğrulanmış ortam modülü (F0 denetiminden)
+- **Bağımlılık:** F4.1
+- **Yap:** web/admin'de `server-env.ts` (`import 'server-only'`): doğrulanmış, tipli `serverEnv` nesnesi; kodda `process.env` doğrudan
+  okunmaz (lint kuralıyla). Tarayıcıya gidecek değişkenler ayrı `NEXT_PUBLIC_` şemasıyla.
+- **KK:** İstemci bileşeninden `server-env` içe aktarılınca build hata veriyor; `process.env` kullanımı lint hatası.
 
 ### [ ] F4.2 Ana iskelet: duyuru, header, mega menü, mobil menü, footer
 - **Bağımlılık:** F4.1

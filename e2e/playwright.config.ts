@@ -18,6 +18,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 2 : 0,
+  // Yeniden denemeyle geçen (kararsız) test CI'ı kırmızı yapar; retry sorunu gizlemesin (CLAUDE.md §1-6).
+  failOnFlakyTests: isCI,
   reporter: isCI
     ? [['github'], ['html', { open: 'never' }]]
     : [['list'], ['html', { open: 'never' }]],

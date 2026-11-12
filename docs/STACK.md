@@ -43,7 +43,6 @@
 | @nestjs/cli | 12.0.12 | F0.4 | Kendi içinde TypeScript ~6.0.2 kullanır |
 | reflect-metadata | 0.2.2 | F0.4 | Nest DI için |
 | rxjs | 7.8.2 | F0.4 | Nest peer bağımlılığı |
-| @types/express | 5.0.6 | — | F0.4'te kuruldu, kullanılmadığı için (knip) kaldırıldı; gerektiğinde eklenecek |
 | @nestjs/swagger | 12.1.1 | F2.1 | |
 | prisma / @prisma/client | 7.10.1 | F2.2 | `latest` etiketi 8.0.0-rc.33 (RC) → kullanılmaz; kararlı son sürüm 7.10.1 |
 | zod | 4.6.7 | F0.5 | utils, api, web, admin |

@@ -102,6 +102,17 @@
 - 2026-11-12 · pg@8.23.1 · örnek entegrasyon testinde gerçek bağlantı; Prisma 7'nin `@prisma/adapter-pg`'si de bunu kullanır (F2.2) · konteyner içinde `psql` çalıştırmak "bağlantı" kanıtı olarak zayıf
 - 2026-11-12 · @playwright/test@1.65.0, @axe-core/playwright@4.14.0 · e2e + a11y (CLAUDE.md §3) · —
 - 2026-11-12 · @vitest/eslint-plugin@1.6.28, eslint-plugin-playwright@2.12.2 · `.only`/`.skip` lint yasağı (CLAUDE.md §1-5) · —
+- 2026-11-12 · Karar (F0.9 — temiz klon testi): pnpm 12 bağımlılıkların install/postinstall betiklerini onaysız çalıştırmaz ve
+  temiz kurulumu `ERR_PNPM_IGNORED_BUILDS` ile durdurur. `pnpm-workspace.yaml → allowBuilds`'te **reddedildi**: `ssh2@1.17.0`
+  (isteğe bağlı yerel kripto hızlandırıcısı), `cpu-features@0.0.10` (node-gyp ile C++ derlemesi), `protobufjs@7.6.6` (yalnızca sürüm
+  uyarısı). Üçü de Testcontainers → dockerode → docker-modem zincirinden; yerel Docker'a SSH'sız bağlandığımız için gerekmez.
+  Yeni bir paket derleme betiği isterse varsayılan karar "reddet"; gerekiyorsa buraya gerekçeyle yazılıp `true` yapılır.
+- 2026-11-12 · Karar (F0.9 — bağımsız denetim bulguları): turbo `lint` → `^build` (temiz klonda `@mobilya/utils/dist` yokken lint
+  yarış durumuyla kırılıyordu); `globalDependencies: [".env"]` (`.env` değişince önbellek geçersiz). Compose portları yalnızca
+  `127.0.0.1`. Next süreçleri kök `.env`'den yalnızca kendi şemalarındaki değişkenleri alır (`loadEnvFileIfExists(path, keys)`).
+  API/worker açılış hatası `runBootstrap` ile log + exit 1. a11y taraması `best-practice` etiketini de içerir; engelleyici yalnızca
+  ciddi/kritik (G6), diğerleri test raporunda not. CI'da `failOnFlakyTests`. Token lint kuralı Tailwind v4 sözdizimini kapsar ve
+  tüm JS/TS dosyalarında çalışır. Ertelenenler: F1.1a, F2.1a, F2.3a, F4.1a.
 - 2026-11-12 · Karar (F0.8): CI tek iş (`ubuntu-24.04`): checkout → setup-node (.nvmrc) → pnpm/action-setup (packageManager,
   mağaza önbelleği) → `pnpm install --frozen-lockfile` → `cp .env.example .env` → `format:check` → `verify` → `knip` → `infra:up` →
   Chromium → `e2e` → rapor artefaktı. Action'lar commit SHA'sıyla sabit (checkout v7.0.1, setup-node v7.1.0, action-setup v6.1.1,

@@ -107,21 +107,37 @@ describe('loadEnvFileIfExists', () => {
     vi.unstubAllEnvs();
   });
 
-  it('dosyadaki değişkenleri yükler ama zaten tanımlı olanı ezmez', () => {
+  function writeEnvFile(content: string): string {
     const file = join(mkdtempSync(join(tmpdir(), 'mobilya-env-')), '.env');
-    writeFileSync(file, 'MOBILYA_TEST_NEW=dosyadan\nMOBILYA_TEST_SET=dosyadan\n');
+    writeFileSync(file, content);
+    return file;
+  }
+
+  it('istenen değişkenleri yükler ama zaten tanımlı olanı ezmez', () => {
+    const file = writeEnvFile('MOBILYA_TEST_NEW=dosyadan\nMOBILYA_TEST_SET=dosyadan\n');
     vi.stubEnv('MOBILYA_TEST_NEW', undefined);
     vi.stubEnv('MOBILYA_TEST_SET', 'ortamdan');
 
-    loadEnvFileIfExists(file);
+    loadEnvFileIfExists(file, ['MOBILYA_TEST_NEW', 'MOBILYA_TEST_SET']);
 
     expect(process.env.MOBILYA_TEST_NEW).toBe('dosyadan');
     expect(process.env.MOBILYA_TEST_SET).toBe('ortamdan');
   });
 
+  it('listede olmayan değişkenleri (ör. başka sürecin şifresi) yüklemez', () => {
+    const file = writeEnvFile('MOBILYA_TEST_API_URL=http://x\nMOBILYA_TEST_DB_SECRET=gizli\n');
+    vi.stubEnv('MOBILYA_TEST_API_URL', undefined);
+    vi.stubEnv('MOBILYA_TEST_DB_SECRET', undefined);
+
+    loadEnvFileIfExists(file, ['MOBILYA_TEST_API_URL']);
+
+    expect(process.env.MOBILYA_TEST_API_URL).toBe('http://x');
+    expect(process.env.MOBILYA_TEST_DB_SECRET).toBeUndefined();
+  });
+
   it('dosya yoksa hata vermeden geçer', () => {
     expect(() => {
-      loadEnvFileIfExists(join(tmpdir(), 'olmayan-klasor', '.env'));
+      loadEnvFileIfExists(join(tmpdir(), 'olmayan-klasor', '.env'), ['X']);
     }).not.toThrow();
   });
 });

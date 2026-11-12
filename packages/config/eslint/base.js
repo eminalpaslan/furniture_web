@@ -11,9 +11,10 @@ import tseslint from 'typescript-eslint';
 
 // esquery regex'leri "/" karakteri içeremez; bu yüzden desenler eğik çizgisiz yazıldı.
 const HEX_COLOR = String.raw`/#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b/`;
-// Tailwind keyfi değeri: `w-[37px]`, `md:bg-[var(--x)]`. `data-[state=open]:` gibi keyfi *varyantlar* serbesttir,
-// çünkü sınıf `]` ile değil `:` ile devam eder.
-const TAILWIND_ARBITRARY = String.raw`/(?:^|\s)!?-?(?:[a-z0-9-]+:)*[a-z][a-z0-9-]*-\[[^\]\s]+\](?=\s|$)/`;
+// Tailwind keyfi değerleri (v4 sözdizimi dahil): `w-[37px]`, `p-[3px]!`, `md:bg-[var(--x)]`, `bg-(--marka)`,
+// `[mask-type:luminance]`. `data-[state=open]:` gibi keyfi *varyantlar* tek başına serbesttir (sınıf `:` ile devam eder);
+// ancak arkasından gelen keyfi değer yine yakalanır (`data-[state=open]:w-[3px]`).
+const TAILWIND_ARBITRARY = String.raw`/(?:^|\s)!?-?(?:[a-z0-9-]+(?:-\[[^\]\s]+\])?:)*(?:[a-z][a-z0-9-]*-(?:\[[^\]\s]+\]|\([^)\s]+\))|\[[a-z-]+:[^\]\s]+\])!?(?=\s|$)/`;
 
 const HEX_MESSAGE =
   'Ham hex renk yasak; tasarım token’ı kullan (CLAUDE.md §1-11, DESIGN_SYSTEM §2).';
@@ -54,8 +55,10 @@ export function baseConfig(tsconfigRootDir) {
       files: ['**/*.{js,mjs,cjs}'],
       extends: [tseslint.configs.disableTypeChecked],
     },
+    // Yalnızca JSX değil: sınıf/renk dizeleri `.ts` varyant dosyalarında (cva) da yazılır.
+    // Token'ların tanımlandığı kaynak (F1.1, packages/ui/tokens) bu kuraldan ayrıca muaf tutulacak.
     {
-      files: ['**/*.{jsx,tsx}'],
+      files: ['**/*.{ts,tsx,js,jsx,mjs,cjs}'],
       rules: {
         'no-restricted-syntax': [
           'error',
