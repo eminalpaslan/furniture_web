@@ -17,6 +17,10 @@
       "cache": false,
       "persistent": true
     },
-    "//#lint:root": {}
+    "//#lint:root": {},
+    "@mobilya/api#test": {
+      "dependsOn": ["build"],
+      "outputs": ["coverage/**"]
+    }
   }
 }

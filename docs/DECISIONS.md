@@ -92,4 +92,10 @@
 - 2026-11-12 · next@16.4.6, react/react-dom@19.3.1, tailwindcss + @tailwindcss/postcss@4.3.5 · vitrin ve panel (CLAUDE.md §3) · —
 - 2026-11-12 · @nestjs/core|common|platform-express@12.5.0, @nestjs/cli@12.0.12, reflect-metadata@0.2.2, rxjs@7.8.2 · API (CLAUDE.md §3); Nest 12 ESM olduğu için API de `type: module` + NodeNext, göreli importlar `.js` uzantılı · —
 - 2026-11-12 · @next/eslint-plugin-next@16.4.6, eslint-plugin-react-hooks@7.1.1 · Next/React lint kuralları (`@mobilya/config/eslint/next`) · eslint-config-next kendi typescript-eslint/import eklentilerini getirip ortak taban ile çakışırdı
+- 2026-11-12 · zod@4.6.7 · ortam doğrulama (F0.5), ileride sözleşmeler (CLAUDE.md §3) · —
+- 2026-11-12 · vitest@5.1.0 · F0.5 kabul kriteri test istediği için F0.6 öncesi paket başına sade kuruldu · —
+- 2026-11-12 · Karar (F0.5): lokal `.env` kökte tek dosya. API onu kodla değil `node --env-file-if-exists=../../.env`
+  bayrağıyla okur (üretimde dosya okuma kod yolu yok; süreç testi uygulamayı dosyasız başlatabilir). Next uygulamaları
+  `next.config.ts` içinde `loadEnvFileIfExists` ile okur (Next'te bayrak yok). Ortak doğrulama `@mobilya/utils/env`
+  (`parseEnv`, `parseEnvOrExit`); hata mesajı değer değil yalnızca değişken adı ve nedeni içerir.
 - 2026-11-12 · Not: `.only`/`.skip` yasağı test eklentisiyle (eslint-plugin-vitest / playwright) F0.6'da eklenecek.

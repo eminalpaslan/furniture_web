@@ -5,8 +5,10 @@
 
 ## Mevcut durum
 - **Faz:** F0 — devam ediyor
-- **Son tamamlanan görev:** F0.4
-- **`pnpm verify` son durumu:** ✔ 2026-11-12 — 12/12 görev (typecheck, lint, build: web, admin, api, config; test henüz yok)
+- **Son tamamlanan görev:** F0.5
+- **`pnpm verify` son durumu:** ✔ 2026-11-12 — 19/19 görev, 26/26 test (utils 10, api 10, web 3, admin 3)
+- **Lokal kurulum notu:** `pnpm verify` ve `pnpm dev` kökte `.env` ister (`cp .env.example .env`); yoksa web/admin build'i
+  `API_URL: eksik` diyerek durur — bu bilinçli (F0.5).
 - **Ortam notu:** Sistem Node'u 22.18.0; proje Node 26.13.1'i pnpm `devEngines` ile kullanıyor (ADR-005).
   Sandbox `.git/` klasörüne yazmayı engelliyor → git yazma komutları sandbox dışında çalıştırılır.
   Kullanıcının başka bir projesi (`todo_db`, `todo_mailpit`) 5432/1025/8025 portlarını kullanıyor → bizim servisler
@@ -21,7 +23,9 @@
 - **Notlar / riskler:** —
 
 ## Sonraki görevlere devredilen notlar
-- F0.5: `apps/api/src/main.ts` içindeki `API_PORT = 4000` sabiti `env.ts`'ye taşınacak.
+- F0.6: Vitest'i workspace düzenine (birim + entegrasyon) taşı; mevcut paket başı `vitest.config.ts`'ler oraya bağlanır.
+- F0.8: Turborepo 2 katı env modunda çalışır → CI'da `API_URL`, `DATABASE_URL` vb. için `turbo.json`'a `passThroughEnv`/`env`
+  eklenmeli; CI'da `.env` yerine iş akışı ortam değişkenleri kullanılır. `@mobilya/api#test`, `build`'e bağımlı (süreç testi).
 - F0.6: `GET /health/live` için entegrasyon testi (örnek Supertest testi) yazılacak; `.only`/`.skip` lint yasağı eklenecek.
 - F2.1: API yanıtlarında `X-Powered-By: Express` var → helmet ile kaldırılacak (zaten F2.1 kapsamında).
 - Windows notu: `pnpm dev` arka planda durdurulunca node alt süreçleri 3000/3001/4000'i tutmaya devam edebiliyor → PID ile kapat.
@@ -61,6 +65,22 @@ _(yok)_
 > - Kanıt: `pnpm verify` → yeşil (typecheck 0, lint 0, test 12/12, build OK)
 > - Görsel kontrol: (UI ise) `[rota] 10/10 ✔` veya bulgular
 > - Not: …
+
+### 2026-11-12 · F0.5 Ortam değişkeni doğrulama — ✔
+- Yapılanlar: `packages/utils` artık derlenen paket (`tsc` → `dist`, `exports["./env"]`): `parseEnv`, `parseEnvOrExit`,
+  `EnvValidationError`, `loadEnvFileIfExists`. `apps/api/src/env.ts` (NODE_ENV, API_PORT, DATABASE_URL, REDIS_URL, MEILI_*,
+  S3_*, SMTP_*) → `main.ts` ve `main.worker.ts` ilk iş olarak doğrular; `API_PORT` sabiti kalktı. `apps/web|admin/env.ts`
+  (`API_URL`) → `next.config.ts` açılışta doğrular. Kök `.env.example` (her değişken açıklamalı, compose değişkenleri dahil).
+  API `.env`'i `node --env-file-if-exists=../../.env` ile okur (dev: `nest start --exec`). `tsconfig.build.json` testleri derlemez.
+  turbo: `@mobilya/api#test` → `build`'e bağlı.
+- Kanıt:
+  - KK (testle): `apps/api/src/startup.test.ts` derlenmiş `dist/main.js` ve `dist/main.worker.js`'i `DATABASE_URL`'siz başlatır →
+    çıkış kodu 1, stderr `DATABASE_URL: eksik`, "listening" yok. ✔ (2/2)
+  - Elle: geçersiz ortamla `node dist/main.js` → 11 satırlık liste (eksik/geçersiz + neden), exit 1, değerler mesajda yok.
+  - `.env` yokken `pnpm --filter @mobilya/web build` → `API_URL: eksik (zorunlu)`, exit 1.
+  - `.env` ile `pnpm dev` → api 200 (`API listening on http://localhost:4000`), web 200, admin 200.
+  - `pnpm verify` → 19/19 görev; testler utils 10/10, api 10/10, web 3/3, admin 3/3. `pnpm knip` temiz
+    (knip'in dist→src eşlemesi için `packages/utils/tsconfig.json`'a `outDir` eklendi).
 
 ### 2026-11-12 · F0.4 Uygulama iskeletleri — ✔
 - Yapılanlar: `packages/config` → `tsconfig/nextjs.json`, `tsconfig/nestjs.json`, `eslint/next.js` (core-web-vitals + react-hooks),

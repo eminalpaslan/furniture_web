@@ -87,6 +87,12 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | **Idempotent** | Bir işlemi 1 kez de yapsan 10 kez de yapsan sonuç aynı. (Bucket varsa tekrar oluşturmaya çalışmaz.) |
 | **S3 / bucket** | Amazon'un dosya depolama standardı. Dosyalar "bucket" denen kovalarda durur. Ürün görselleri burada saklanacak. |
 | **Arşivlenmiş depo** | Sahibinin geliştirmeyi durdurduğu, artık güncelleme almayan açık kaynak proje. Güvenlik açısından kullanılmamalı. |
+| **Ortam değişkeni (environment variable)** | Programa dışarıdan verilen ayar: `DATABASE_URL=postgresql://...`. Aynı kod, farklı ortamlarda (lokal, canlı) farklı ayarlarla çalışır. Şifreler koda değil buraya yazılır. |
+| **`.env` dosyası** | Lokal geliştirmede ortam değişkenlerini tutan metin dosyası. Gizlidir, git'e girmez. Paylaşılan kopyası `.env.example`'dır (gerçek şifresiz). |
+| **Şema (schema)** | Verinin nasıl olması gerektiğinin tarifi: "DATABASE_URL zorunlu ve postgres adresi olmalı". **Zod** bu tarifi kodla yazmamızı sağlar. |
+| **Birim testi (unit test)** | Tek bir fonksiyonu yalıtılmış olarak deneyen küçük otomatik test. |
+| **Süreç testi** | Uygulamayı gerçekten ayrı bir program olarak başlatıp davranışını (çıkış kodu, ekrana yazdığı) kontrol eden test. |
+| **Çıkış kodu (exit code)** | Program kapanırken bıraktığı sayı: `0` = başarılı, `1` (veya başka) = hata. Otomasyon araçları buna bakar. |
 
 ---
 
@@ -118,6 +124,17 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | `.prettierignore` | Prettier'ın dokunmayacağı dosyalar (kilit dosyası ve Markdown belgeleri). | F0.2 |
 | `knip.json` | Knip'e (ölü kod avcısı) projenin giriş noktalarını söyler. | F0.2 |
 | `docker-compose.yml` | Lokal servislerin tarifi: veritabanı, Redis, arama motoru, dosya deposu, e-posta yakalayıcı. | F0.3 |
+| `.env.example` | **Bütün ortam değişkenlerinin açıklamalı listesi** (gerçek şifre yok). Kopyalayıp `.env` yaparsın. | F0.5 |
+| `.env` | Senin lokal ayarların (`.env.example`'ın kopyası). **Git'e girmez.** Silinirse uygulamalar "şu değişken eksik" diyerek açılmaz. | F0.5 |
+
+### `packages/utils` içi
+
+| Dosya | Ne işe yarar? | Görev |
+|---|---|---|
+| `src/env.ts` | Ortam değişkenlerini doğrulayan ortak yardımcılar: `parseEnv` (kontrol et, sorunluları listele), `parseEnvOrExit` (sorun varsa yaz ve programı kapat). | F0.5 |
+| `src/env.test.ts` | Yukarıdakilerin testleri (eksik, boş, geçersiz değer; gizli değerin mesaja sızmaması…). | F0.5 |
+| `tsconfig.build.json` | Paketi `dist/`'e derleme ayarı (testleri dışarıda bırakır). Diğer uygulamalar derlenmiş `dist/`'i kullanır. | F0.5 |
+| `vitest.config.ts` | Test aracının ayarı: hangi dosyalar test. | F0.5 |
 
 ### `packages/config` içi
 
@@ -139,7 +156,9 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | `app/page.tsx` | Ana sayfanın kendisi (şimdilik boş `<main />`). | F0.4 |
 | `app/globals.css` | Global stil dosyası; Tailwind'i içeri alır. | F0.4 |
 | `messages/tr.json` | **Kullanıcıya görünen bütün Türkçe metinler.** Kodun içine metin gömülmez; ileride İngilizce eklemek için `en.json` yeter. | F0.4 |
-| `next.config.ts` | Next.js ayarları. | F0.4 |
+| `next.config.ts` | Next.js ayarları. Açılışta kökteki `.env`'i okur ve ortamı doğrular (F0.5). | F0.4 |
+| `env.ts` | Bu uygulamanın ihtiyaç duyduğu ortam değişkenlerinin şeması (şimdilik `API_URL`). | F0.5 |
+| `env.test.ts`, `vitest.config.ts` | Şema testleri ve test ayarı. | F0.5 |
 | `postcss.config.mjs` | CSS işleme hattı; Tailwind eklentisini çalıştırır. | F0.4 |
 | `tsconfig.json`, `eslint.config.js` | Ortak ayarları (`packages/config`) miras alan kısa dosyalar. | F0.4 |
 | `.next/`, `next-env.d.ts` | Next'in ürettiği derleme çıktısı ve tip dosyası — **otomatik**, git'e girmez. | F0.4 |
@@ -148,7 +167,12 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 
 | Dosya | Ne işe yarar? | Görev |
 |---|---|---|
-| `src/main.ts` | API'nin **giriş noktası**: uygulamayı kurar, 4000 portunu dinlemeye başlar. | F0.4 |
+| `src/main.ts` | API'nin **giriş noktası**: önce ortamı doğrular, sonra uygulamayı kurar ve `API_PORT`'u (4000) dinler. | F0.4 |
+| `src/env.ts` | API ve worker'ın ortam değişkenleri şeması: veritabanı, Redis, arama, S3, SMTP adresleri. | F0.5 |
+| `src/env.test.ts` | Şema testleri: her zorunlu değişken eksikken adıyla reddediliyor mu? | F0.5 |
+| `src/startup.test.ts` | **Derlenmiş** API ve worker'ı `DATABASE_URL` olmadan gerçekten başlatır; "eksik" deyip 1 koduyla kapandığını kontrol eder. | F0.5 |
+| `src/testing/valid-env.ts` | Testlerde kullanılan örnek geçerli ortam. Derlemeye girmez. | F0.5 |
+| `tsconfig.build.json` | `nest build`'in kullandığı derleme ayarı (test dosyalarını dışarıda bırakır). | F0.5 |
 | `src/main.worker.ts` | **İşçi (worker)** sürecinin giriş noktası: e-posta gönderme, arama indeksleme gibi arka plan işleri burada çalışacak (F2.6). | F0.4 |
 | `src/app.module.ts` | API'nin **kök modülü**: bütün özellik modüllerini (health, ileride catalog, cart, orders…) bir araya getirir. | F0.4 |
 | `src/worker.module.ts` | İşçinin kök modülü. | F0.4 |
@@ -291,6 +315,38 @@ git commit -m "..."
 - **API vs Worker:** İkisi aynı kod tabanından iki ayrı süreç. API kullanıcı isteklerine anında cevap verir; worker yavaş işleri
   (e-posta göndermek gibi) arka planda yapar. Böylece müşteri "sipariş ver"e basınca e-postanın gitmesini beklemez.
 
+### Ortam değişkenleri ve Zod
+- **Sorun:** Uygulama veritabanının adresini, şifreleri vb. bilmeli. Bunları koda yazarsak (1) şifreler git'e girer,
+  (2) lokal ve canlı ortam için kodu değiştirmek gerekir. Çözüm: **ortam değişkenleri**.
+- **Nereden gelir?** Lokalde kökteki `.env` dosyasından; canlı sunucuda sunucunun gizli bilgi yöneticisinden.
+- **Zod ne yapıyor?** Değişkenleri program açılırken kontrol eder. Örnek (`apps/api/src/env.ts`):
+  ```ts
+  DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),   // zorunlu, postgres adresi olmalı
+  API_PORT: port.default(4000),                           // verilmezse 4000; "4000" yazısını sayıya çevirir
+  ```
+  Bir sorun varsa program **hiç başlamaz** ve tam olarak neyin yanlış olduğunu söyler:
+  ```
+  Ortam değişkenleri geçersiz:
+    • DATABASE_URL: eksik (zorunlu)
+    • SMTP_PORT: geçersiz — Invalid input: expected number, received NaN
+  Açıklamalar için kökteki .env.example dosyasına bakın.
+  ```
+- **Neden "başlamasın"?** Veritabanı adresi yanlış bir API açılsa da ilk siparişte çöker — müşterinin önünde. Açılışta
+  hata vermek, sorunu kimse zarar görmeden yakalar ("fail fast" = erken ve gürültülü hata).
+- **Güvenlik detayı:** Hata mesajı değişkenin **adını** söyler ama **değerini** asla yazmaz; şifre yanlış girilse bile
+  log dosyasına düşmez. Bunu bir testle de garanti altına aldık.
+
+### Vitest (test aracı)
+- **Ne:** Otomatik testleri çalıştıran araç. `*.test.ts` dosyalarını bulur, içindeki `it('...')` bloklarını çalıştırır.
+- **Bir testin yapısı** (`packages/utils/src/env.test.ts`'ten):
+  ```ts
+  it('eksik değişkenin adını hata mesajında söyler', () => {
+    const error = captureError(() => parseEnv(schema, {}));   // hazırlık + eylem
+    expect(error.message).toContain('DATABASE_URL');           // beklenti
+  });
+  ```
+- **Komutlar:** `pnpm test` (hepsi), `pnpm --filter @mobilya/utils test` (tek paket). İzleme modu için paket klasöründe `pnpm exec vitest`.
+
 ### Docker Compose ve lokal servislerimiz
 Sitemizin arka ucu 5 yardımcı servise ihtiyaç duyar. Hepsini bilgisayarına tek tek kurmak yerine Docker konteynerlerinde çalıştırıyoruz:
 
@@ -339,6 +395,8 @@ Sitemizin arka ucu 5 yardımcı servise ihtiyaç duyar. Hepsini bilgisayarına t
 | `pnpm knip` | Kullanılmayan kod/bağımlılık avcısı | F0.2 |
 | `pnpm format` / `pnpm format:check` | Kodu Prettier ile biçimlendir / yalnızca kontrol et | F0.2 |
 | `pnpm infra:up` / `infra:down` / `infra:reset` | Lokal servisleri başlat / durdur / verileri silip sıfırla | F0.3 |
+| `pnpm test` | Bütün otomatik testleri çalıştırır | F0.5 |
+| `cp .env.example .env` | İlk kurulumda lokal ayar dosyasını oluşturur | F0.5 |
 
 ---
 
@@ -490,3 +548,42 @@ Sonra tarayıcıda:
 Küçük bir deney: `pnpm dev` açıkken `apps/web/app/page.tsx` dosyasında `<main />` yerine `<main>Merhaba</main>` yaz ve kaydet;
 tarayıcı kendiliğinden yenilenir (hot reload). Sonra eski hâline geri al. (Gerçek metinler `messages/tr.json`'a gider —
 bu sadece deney.) Bir sayfa dene: `apps/web/app/deneme/page.tsx` oluştur → http://localhost:3000/deneme açılır. Denemeden sonra sil.
+
+### F0.5 · Ortam değişkeni doğrulama (2026-11-12)
+
+**Ne yaptık?**
+1. `packages/utils` paketine ilk gerçek kodu yazdık: ortam değişkenlerini Zod şemasıyla kontrol eden `parseEnv` ve
+   sorun varsa programı açıklamayla kapatan `parseEnvOrExit`. Bu paket artık **derlenen** bir paket: diğer uygulamalar onun
+   `dist/` çıktısını kullanıyor (Turborepo önce utils'i derliyor — `turbo.json`'daki `^build` sayesinde).
+2. API, worker, vitrin ve panelin her birine kendi `env.ts` şemasını yazdık.
+3. Kökte `.env.example` oluşturduk; her değişkenin ne işe yaradığını yorumla açıkladık.
+4. İlk testlerimizi yazdık (toplam 26 test).
+
+**Neden böyle?**
+- **Ortak yardımcı, ayrı şemalar:** "Kontrol et ve hatayı güzel yaz" mantığı her yerde aynı → tek yerde (`utils`).
+  Ama her uygulamanın ihtiyacı farklı (API veritabanını bilir, vitrin bilmez) → şema uygulamanın kendisinde.
+- **Vitrin veritabanı adresini bilmiyor:** Kasıtlı. "Ön yüz veritabanına asla doğrudan bağlanmaz" kuralı (Büyük resim bölümü)
+  ayar düzeyinde de geçerli: vitrine yalnızca `API_URL` veriliyor.
+- **API `.env`'i nasıl okuyor?** Kodla değil, Node'un kendi bayrağıyla: `node --env-file-if-exists=../../.env dist/main.js`.
+  Canlı sunucuda bu dosya yoktur, değerler sunucunun ortamından gelir. Böylece "dosya okuma" diye ayrı bir kod yolumuz olmuyor.
+- **Kabul kriteri "testle" diyordu:** Bu yüzden yalnızca şemayı test etmekle yetinmedik. `startup.test.ts`, derlenmiş API'yi
+  **gerçek bir program olarak** `DATABASE_URL` olmadan başlatıyor ve (1) çıkış kodunun 1 olduğunu, (2) "DATABASE_URL: eksik"
+  yazdığını, (3) "listening" (dinliyorum) demediğini kontrol ediyor. Gerçek davranışı test etmek, parçayı test etmekten daha güçlü bir kanıttır.
+
+**Yolda öğrendiğimiz:** İlk derlemede API çıktısı `dist/src/main.js`'e gitti (beklenen `dist/main.js`). Neden? tsconfig'e test
+ayar dosyasını (`vitest.config.ts`) ekleyince TypeScript "kök klasör" olarak `src/` yerine `apps/api/`'yi seçti. Çözüm: derleme
+için ayrı `tsconfig.build.json` + `rootDir: "src"`. Testler başarısız olunca hemen fark ettik — testlerin bir faydası da bu.
+
+**Öğrenilecek kavramlar:** ortam değişkeni, `.env` ve `.env.example`, şema doğrulama (Zod), "fail fast", birim testi, süreç testi, çıkış kodu.
+
+**Kendin dene:**
+```bash
+pnpm test                                  # 26 testin geçtiğini gör
+```
+Sonra bir deney: kökteki `.env` dosyasında `DATABASE_URL=...` satırının başına `#` koy (yorum yap), kaydet ve
+```bash
+pnpm --filter @mobilya/api build
+pnpm --filter @mobilya/api start           # → "DATABASE_URL: eksik (zorunlu)" yazıp kapanır
+```
+Deneyden sonra `#` işaretini geri kaldır. Ardından `.env.example` dosyasını baştan sona oku — sitenin hangi dış servislere
+bağlandığını tek sayfada görürsün.

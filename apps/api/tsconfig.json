@@ -1,8 +1,7 @@
 {
   "extends": "@mobilya/config/tsconfig/nestjs.json",
   "compilerOptions": {
-    "rootDir": "src",
     "outDir": "dist"
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "vitest.config.ts"]
 }

@@ -46,7 +46,7 @@
 | @types/express | 5.0.6 | — | F0.4'te kuruldu, kullanılmadığı için (knip) kaldırıldı; gerektiğinde eklenecek |
 | @nestjs/swagger | 12.1.1 | F2.1 | |
 | prisma / @prisma/client | 7.10.1 | F2.2 | `latest` etiketi 8.0.0-rc.33 (RC) → kullanılmaz; kararlı son sürüm 7.10.1 |
-| zod | 4.6.7 | F0.5 | |
+| zod | 4.6.7 | F0.5 | utils, api, web, admin |
 | bullmq | 6.7.5 | F2.6 | |
 | ioredis | 6.0.0 | F2.6 | |
 | meilisearch (JS istemcisi) | 0.63.0 | F3.8 | |
@@ -59,7 +59,8 @@
 
 | Paket | Sürüm | Kurulum | Not |
 |---|---|---|---|
-| vitest / @vitest/coverage-v8 | 5.1.0 | F0.6 | |
+| vitest | 5.1.0 | F0.5 | env testleri için paket başına sade kuruldu; workspace düzeni F0.6 |
+| @vitest/coverage-v8 | 5.1.0 | F0.6 | |
 | testcontainers / @testcontainers/postgresql | 12.2.1 | F0.6 | |
 | supertest | 7.3.2 | F0.6 | |
 | @playwright/test | 1.65.0 | F0.6 | |

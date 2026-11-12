@@ -58,7 +58,7 @@
 - **KK:** Üç uygulama ayağa kalkıyor; api `/health/live` 200 dönüyor; web ve admin boş sayfa render ediyor; `pnpm build` yeşil.
 - **Doğrula:** `pnpm verify`; `curl localhost:4000/health/live`.
 
-### [ ] F0.5 Ortam değişkeni doğrulama
+### [x] F0.5 Ortam değişkeni doğrulama
 - **Bağımlılık:** F0.4
 - **Yap:** Her uygulamada Zod tabanlı `env.ts`; eksik değişkende açıklayıcı hata ile başlamama. Kök `.env.example` her değişkeni yorumla açıklar.
 - **KK:** Zorunlu bir değişken silinince uygulama hangi değişkenin eksik olduğunu söyleyerek kapanıyor (testle).

@@ -8,12 +8,15 @@
     "build": "next build",
     "start": "next start --port 3001",
     "lint": "eslint . --max-warnings=0",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@mobilya/utils": "workspace:*",
     "next": "16.4.6",
     "react": "19.3.1",
-    "react-dom": "19.3.1"
+    "react-dom": "19.3.1",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@mobilya/config": "workspace:*",
@@ -23,6 +26,7 @@
     "@types/react-dom": "19.3.0",
     "eslint": "10.14.0",
     "tailwindcss": "4.3.5",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
   }
 }
