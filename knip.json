@@ -6,6 +6,9 @@
     },
     "e2e": {
       "ignoreDependencies": ["@mobilya/web", "@mobilya/admin", "@mobilya/api"]
+    },
+    ".": {
+      "entry": ["scripts/*.mjs"]
     }
   }
 }

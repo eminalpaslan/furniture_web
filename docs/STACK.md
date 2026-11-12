@@ -94,3 +94,13 @@
 | S3 (RustFS) | `rustfs/rustfs:1.0.5` | F0.3 | MinIO arşivlendi → ADR-006 |
 | Mailpit | `axllent/mailpit:v1.33.1` | F0.3 | |
 | AWS CLI | `amazon/aws-cli:2.40.1` | F0.3 | Yalnızca `s3-init` (bucket oluşturma) |
+
+## CI (GitHub Actions — `.github/workflows/ci.yml`, commit SHA ile sabit)
+
+| Action / araç | Sürüm | Kurulum | Not |
+|---|---|---|---|
+| actions/checkout | v7.0.1 (`3d3c42e5…`) | F0.8 | |
+| actions/setup-node | v7.1.0 (`949feb24…`) | F0.8 | `node-version-file: .nvmrc` |
+| pnpm/action-setup | v6.1.1 (`73e46992…`) | F0.8 | `packageManager` alanını okur, `cache: true` |
+| actions/upload-artifact | v7.0.2 (`cf430e03…`) | F0.8 | Playwright raporu |
+| actionlint (`rhysd/actionlint` imajı) | 1.7.12 | F0.8 | `pnpm lint:ci` |

@@ -5,7 +5,7 @@
 
 ## Mevcut durum
 - **Faz:** F0 — devam ediyor
-- **Son tamamlanan görev:** F0.7
+- **Son tamamlanan görev:** F0.8
 - **`pnpm verify` son durumu:** ✔ 2026-11-12 — 22/22 görev, 38/38 test (utils 10, api 14 [unit 8 + entegrasyon 6], web 3, admin 3,
   e2e/ui-snap 8); `pnpm e2e` 7/7, `pnpm e2e:a11y` 3/3. Entegrasyon testleri için Docker Desktop açık olmalı.
 - **`ui:snap` kullanımı:** uygulama çalışıyor olmalı (`pnpm dev` veya `pnpm --filter @mobilya/web start`). Git Bash'te
@@ -26,9 +26,8 @@
 - **Notlar / riskler:** —
 
 ## Sonraki görevlere devredilen notlar
-- F0.8: Turborepo 2 katı env modunda çalışır → CI'da `API_URL`, `DATABASE_URL` vb. için `turbo.json`'a `passThroughEnv`/`env`
-  eklenmeli; CI'da `.env` yerine iş akışı ortam değişkenleri kullanılır. `@mobilya/api#test`, `build`'e bağımlı (süreç testi);
-  entegrasyon testleri Docker ister (GitHub ubuntu runner'da var). CI'da `pnpm e2e:install` (Chromium) adımı gerekir.
+- CI henüz GitHub'da hiç çalışmadı (depo uzak sunucuya gönderilmedi). İlk push'tan sonra Actions sekmesinde sonucu kontrol et;
+  F12 öncesi staging/production için uygulama değişkenleri `.env` yerine ortamdan gelecek → o zaman turbo `env`/`passThroughEnv` gözden geçirilir.
 - Domain modülleri (pricing, cart, …) geldikçe `apps/api/vitest.config.ts` → `coverage.thresholds` ile ≥ %85 eşik (CLAUDE.md §4.1 G3).
 - F2.1: API yanıtlarında `X-Powered-By: Express` var → helmet ile kaldırılacak (zaten F2.1 kapsamında).
 - Windows notu: `pnpm dev` arka planda durdurulunca node alt süreçleri 3000/3001/4000'i tutmaya devam edebiliyor → PID ile kapat.
@@ -55,6 +54,7 @@ _(yok)_
 | 10 | Alan adı ve barındırma tercihi (KVKK) | F12.1 | — | sonra |
 | 11 | WhatsApp destek numarası, sosyal medya hesapları | F4.2 | yer tutucu | bekleniyor |
 | 12 | Gerçek ürün verisi ve fotoğrafları | F12.3 | seed verisi | sonra |
+| 13 | GitHub deposu (özel) — kod oraya gönderilince CI çalışır | F0.8 doğrulaması | yerel prova (`CI=1`) | opsiyonel |
 
 ## Ölçümler
 > Lighthouse, paket boyutu, yük testi sonuçları. Format: tarih · sayfa/senaryo · değerler.
@@ -68,6 +68,17 @@ _(yok)_
 > - Kanıt: `pnpm verify` → yeşil (typecheck 0, lint 0, test 12/12, build OK)
 > - Görsel kontrol: (UI ise) `[rota] 10/10 ✔` veya bulgular
 > - Not: …
+
+### 2026-11-12 · F0.8 CI (GitHub Actions) — ✔
+- Yapılanlar: `.github/workflows/ci.yml` (PR + main push; checkout → Node(.nvmrc) → pnpm + önbellek → frozen install → `.env` →
+  format:check → verify → knip → infra:up → Chromium → e2e → Playwright raporu artefakt). Action'lar SHA ile sabit, `permissions:
+  contents: read`, `concurrency` iptal. `scripts/actionlint.mjs` + `pnpm lint:ci` (Docker `rhysd/actionlint:1.7.12`).
+  turbo `globalPassThroughEnv: [CI, NEXT_TELEMETRY_DISABLED]`.
+- Kanıt:
+  - KK: `pnpm lint:ci` → temiz (exit 0). Kasıtlı hatalı `probe.yml` (`github.evnt`, bilinmeyen girdi) → actionlint hata + exit 1 (silindi).
+  - KK (adımlar = scriptler): YAML'daki her `run:` bir pnpm scripti (yalnızca `cp .env.example .env` ve `playwright install` hariç).
+  - Prova: `CI=1` ile aynı sıra yerelde → frozen install ✔, format ✔, verify 22/22 ✔, knip ✔, infra:up ✔, e2e 7/7 ✔
+    (Playwright `::notice` GitHub özet satırı üretildi). `act` kurulu değil; gerçek GitHub çalıştırması ilk push'ta görülecek.
 
 ### 2026-11-12 · F0.7 Görsel öz-kontrol aracı (`ui:snap`) — ✔
 - Yapılanlar: `e2e/ui-snap/` → `options.ts` (argümanlar, slug), `page-checks.ts` (taşma ölçümü + taşan öğeler, konsol/sayfa/istek

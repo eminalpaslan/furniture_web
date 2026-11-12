@@ -1,5 +1,6 @@
 {
   "$schema": "https://turborepo.com/schema.json",
+  "globalPassThroughEnv": ["CI", "NEXT_TELEMETRY_DISABLED"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -24,13 +25,11 @@
     },
     "e2e": {
       "dependsOn": ["^build"],
-      "cache": false,
-      "passThroughEnv": ["CI"]
+      "cache": false
     },
     "e2e:a11y": {
       "dependsOn": ["^build"],
-      "cache": false,
-      "passThroughEnv": ["CI"]
+      "cache": false
     }
   }
 }

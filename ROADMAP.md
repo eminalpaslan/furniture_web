@@ -76,7 +76,7 @@
 - **KK:** Ana sayfa için 4+ görüntü üretiliyor; kasıtlı yatay taşma eklenince araç uyarı veriyor; konsol hatası raporlanıyor.
 - **Doğrula:** Aracı çalıştır, üretilen bir görüntüyü Read ile aç.
 
-### [ ] F0.8 CI (GitHub Actions)
+### [x] F0.8 CI (GitHub Actions)
 - **Bağımlılık:** F0.6
 - **Yap:** PR ve `main` için iş akışı: install (önbellekli) → `verify` → servislerle `e2e` → artefakt olarak Playwright raporu.
 - **KK:** İş akışı YAML'ı `actionlint` ile geçerli; yerelde `act` yoksa en azından adımlar `pnpm` scriptleriyle birebir aynı.

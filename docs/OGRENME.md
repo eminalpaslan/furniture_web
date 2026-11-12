@@ -129,6 +129,8 @@ daha kod çalışmadan TypeScript tarafından yakalanır.
 | `.husky/commit-msg` | Commit mesajı yazılınca çalışan kanca → `commitlint` ile mesajı denetler. | F0.2 |
 | `.prettierignore` | Prettier'ın dokunmayacağı dosyalar (kilit dosyası ve Markdown belgeleri). | F0.2 |
 | `knip.json` | Knip'e (ölü kod avcısı) projenin giriş noktalarını söyler. | F0.2 |
+| `.github/workflows/ci.yml` | **CI iş akışı**: GitHub'a her kod gönderildiğinde bütün kontrolleri (biçim, tip, lint, test, derleme, e2e) otomatik çalıştırır. | F0.8 |
+| `scripts/actionlint.mjs` | CI dosyasını hatalara karşı denetleyen `actionlint` aracını Docker ile çalıştırır (`pnpm lint:ci`). | F0.8 |
 | `docker-compose.yml` | Lokal servislerin tarifi: veritabanı, Redis, arama motoru, dosya deposu, e-posta yakalayıcı. | F0.3 |
 | `.env.example` | **Bütün ortam değişkenlerinin açıklamalı listesi** (gerçek şifre yok). Kopyalayıp `.env` yaparsın. | F0.5 |
 | `.env` | Senin lokal ayarların (`.env.example`'ın kopyası). **Git'e girmez.** Silinirse uygulamalar "şu değişken eksik" diyerek açılmaz. | F0.5 |
@@ -458,6 +460,7 @@ Sitemizin arka ucu 5 yardımcı servise ihtiyaç duyar. Hepsini bilgisayarına t
 | `pnpm test` | Bütün otomatik testleri çalıştırır | F0.5 |
 | `cp .env.example .env` | İlk kurulumda lokal ayar dosyasını oluşturur | F0.5 |
 | `pnpm e2e:install` | Playwright'ın tarayıcısını (Chromium) indirir — ilk kurulumda bir kez | F0.6 |
+| `pnpm lint:ci` | GitHub Actions iş akışı dosyasını denetler (Docker gerekir) | F0.8 |
 | `pnpm e2e` / `pnpm e2e:a11y` | Uygulamaları derleyip tarayıcı testlerini / yalnızca erişilebilirlik testlerini çalıştırır | F0.6 |
 | `pnpm --filter @mobilya/e2e exec playwright show-report` | Son e2e çalıştırmasının görsel raporunu tarayıcıda açar | F0.6 |
 
@@ -717,3 +720,37 @@ pnpm ui:snap / --states hover,focus,menu            # ikinci terminalde (PowerSh
 ```
 Sonra VS Code'da `.artifacts/screens/index/` klasörünü aç ve görüntülere bak (şimdilik boş beyaz sayfa — F1 ve F4'te dolacak).
 Panel için: `pnpm ui:snap / --base http://localhost:3001`.
+
+### F0.8 · CI — GitHub Actions (2026-11-12)
+
+**CI nedir?** "Continuous Integration" (sürekli entegrasyon): kod GitHub'a her gönderildiğinde, GitHub'ın kendi bilgisayarlarında
+bütün kontroller **otomatik** çalışır. Bir şey bozulursa (test kırmızı, lint hatası) daha birleştirilmeden görülür. `main` dalı
+böylece her zaman çalışır hâlde kalır.
+
+**Ne yaptık?**
+1. `.github/workflows/ci.yml` dosyasını yazdık. Sırayla: kodu al → Node 26 kur → pnpm kur (önbellekli) → bağımlılıkları kilit
+   dosyasına birebir kur → `.env` hazırla → biçim kontrolü → `pnpm verify` → knip → Docker servislerini başlat → tarayıcı kur →
+   `pnpm e2e` → test raporunu indirilebilir dosya olarak sakla.
+2. İş akışı dosyasını denetleyen `actionlint`'i ekledik (`pnpm lint:ci`).
+
+**Neden böyle?**
+- **CI'a özel komut yok:** CI, senin bilgisayarında çalıştırdığın `pnpm verify`, `pnpm e2e` komutlarının **aynısını** çalıştırır.
+  "Bende geçiyor ama CI'da kırılıyor" tartışmalarının çoğu böylece biter.
+- **Action'lar neden uzun bir kodla (SHA) yazıldı?** `actions/checkout@v7` gibi bir etiket, sahibi tarafından sonradan başka bir koda
+  taşınabilir; kötü niyetli biri ele geçirirse CI'mızda onun kodu çalışır (tedarik zinciri saldırısı). Commit SHA'sı değiştirilemez.
+  Yanına yorum olarak sürümü yazdık (`# v7.0.1`) ki okunabilir kalsın.
+- **`permissions: contents: read`:** CI işine en az yetkiyi veriyoruz; kodu okuyabilir, depoya yazamaz.
+- **actionlint'i nasıl test ettik?** Bilerek hatalı bir iş akışı dosyası (yanlış yazılmış değişken adı `github.evnt`) ekledik,
+  araç yakaladı, dosyayı sildik. Yine aynı ilke: aracın gerçekten çalıştığını gör.
+- **Henüz GitHub'da çalışmadı:** Proje şu an yalnızca senin bilgisayarında. Bu yüzden aynı adımları yerelde `CI=1` ayarıyla
+  sırayla çalıştırarak "prova" yaptık; hepsi geçti. Kodu GitHub'a gönderdiğinde (istersen birlikte yaparız) Actions sekmesinde
+  gerçek çalıştırmayı görürsün.
+
+**Öğrenilecek kavramlar:** CI, iş akışı (workflow), runner, önbellek, artefakt, SHA ile sabitleme, en az yetki ilkesi.
+
+**Kendin dene:**
+```bash
+pnpm lint:ci        # iş akışı dosyasını denetle (Docker açık olmalı)
+```
+Sonra `.github/workflows/ci.yml` dosyasını aç ve adımları yukarıdaki listeyle karşılaştırarak oku — her `run:` satırı senin de
+terminalde çalıştırabileceğin bir komut.

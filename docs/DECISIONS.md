@@ -102,6 +102,11 @@
 - 2026-11-12 · pg@8.23.1 · örnek entegrasyon testinde gerçek bağlantı; Prisma 7'nin `@prisma/adapter-pg`'si de bunu kullanır (F2.2) · konteyner içinde `psql` çalıştırmak "bağlantı" kanıtı olarak zayıf
 - 2026-11-12 · @playwright/test@1.65.0, @axe-core/playwright@4.14.0 · e2e + a11y (CLAUDE.md §3) · —
 - 2026-11-12 · @vitest/eslint-plugin@1.6.28, eslint-plugin-playwright@2.12.2 · `.only`/`.skip` lint yasağı (CLAUDE.md §1-5) · —
+- 2026-11-12 · Karar (F0.8): CI tek iş (`ubuntu-24.04`): checkout → setup-node (.nvmrc) → pnpm/action-setup (packageManager,
+  mağaza önbelleği) → `pnpm install --frozen-lockfile` → `cp .env.example .env` → `format:check` → `verify` → `knip` → `infra:up` →
+  Chromium → `e2e` → rapor artefaktı. Action'lar commit SHA'sıyla sabit (checkout v7.0.1, setup-node v7.1.0, action-setup v6.1.1,
+  upload-artifact v7.0.2). actionlint 1.7.12 Docker imajıyla (`pnpm lint:ci`), ayrı kurulum yok. Turbo katı env modu için
+  `globalPassThroughEnv: [CI, NEXT_TELEMETRY_DISABLED]`; uygulama değişkenleri `.env` dosyasından okunduğu için turbo'ya ayrıca verilmez.
 - 2026-11-12 · Karar (F0.7): `ui:snap` `e2e/ui-snap/` altında; derleme adımı olmadan Node 26'nın yerleşik TypeScript
   çalıştırmasıyla (`node ui-snap/cli.ts`) çalışır — bu yüzden göreli importlar `.ts` uzantılı (`allowImportingTsExtensions`).
   Çıktı: `.artifacts/screens/<slug>/<genişlik>-{full|hover|focus|menu}.png` + `report.json`. Taşma ve konsol hataları uyarıdır
