@@ -40,7 +40,7 @@ Kurulum doğru ise:
 | http://localhost:3001 | Yönetim paneli (sekme başlığı `[MARKA_ADI] Yönetim`) |
 | http://localhost:4000/health/live | `{"status":"ok"}` |
 | http://localhost:18025 | Mailpit (yakalanan e-postalar) |
-| http://localhost:19001 | RustFS konsolu (`mobilya` / `mobilya_dev_secret`) |
+| http://localhost:19001/rustfs/console/ | RustFS konsolu (`mobilya` / `mobilya_dev_secret`) |
 
 ## Komutlar
 
@@ -75,4 +75,6 @@ Lokal servisler başka projelerle çakışmasın diye "1 + standart port" kural�
 - **Entegrasyon testleri `Could not find a working container runtime`** → Docker Desktop açık değil.
 - **Git Bash'te `pnpm ui:snap /` yanlış rota alıyor** → Git Bash `/` ile başlayan argümanı Windows yoluna çevirir:
   `MSYS_NO_PATHCONV=1 pnpm ui:snap /` (PowerShell'de sorun yok).
+- **Windows'ta `Sistem belirtilen yolu bulamıyor (os error 3)`** → proje klasörünün yolu çok uzun (Windows 260 karakter sınırı;
+  pnpm `node_modules` içinde uzun dosya adları kullanır). Projeyi kısa bir yola (ör. `C:\projeler\mobilya`) klonla.
 - **Commit reddedildi** → mesaj Conventional Commits biçiminde ve küçük harfle başlamalı: `feat(catalog): takım kartları [F4.7]`.

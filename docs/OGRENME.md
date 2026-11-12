@@ -417,7 +417,7 @@ Sitemizin arka ucu 5 yardımcı servise ihtiyaç duyar. Hepsini bilgisayarına t
 | **PostgreSQL** | Ana veritabanı: ürünler, siparişler, kullanıcılar. | `localhost:15432` | — |
 | **Redis** | Çok hızlı bellek-içi depo: oturumlar, oran sınırlama, iş kuyruğu (BullMQ). | `localhost:16379` | — |
 | **Meilisearch** | Arama motoru: "gardırop" yazınca "gardirop"u da bulur, yazım hatası tolere eder. | `localhost:17700` | http://localhost:17700 |
-| **RustFS (S3)** | Dosya deposu: ürün fotoğrafları. Amazon S3 ile aynı dili konuşur. | `localhost:19000` | Konsol: http://localhost:19001 (kullanıcı `mobilya` / şifre `mobilya_dev_secret`) |
+| **RustFS (S3)** | Dosya deposu: ürün fotoğrafları. Amazon S3 ile aynı dili konuşur. | `localhost:19000` | Konsol: http://localhost:19001/rustfs/console/ (kullanıcı `mobilya` / şifre `mobilya_dev_secret`) |
 | **Mailpit** | Sahte e-posta sunucusu: site e-posta gönderince gerçek kişiye gitmez, burada yakalanır. | SMTP `localhost:11025` | http://localhost:18025 |
 
 - **Neden portlar 15432 gibi?** Bilgisayarında başka bir projenin (todo) Postgres'i zaten 5432'de çalışıyor. Aynı kapıyı iki
@@ -570,7 +570,7 @@ docker compose ps                 # hepsi "(healthy)" olmalı
 ```
 Sonra tarayıcıda:
 - http://localhost:18025 → Mailpit gelen kutusu (şimdilik boş; F2.8'den sonra kayıt e-postaları buraya düşecek)
-- http://localhost:19001 → RustFS konsolu (`mobilya` / `mobilya_dev_secret`) → `media` bucket'ını gör
+- http://localhost:19001/rustfs/console/ → RustFS konsolu (`mobilya` / `mobilya_dev_secret`) → `media` bucket'ını gör
 - http://localhost:17700/health → Meilisearch `{"status":"available"}` demeli
 
 Veritabanına bağlanmak istersen (ör. VS Code'da bir PostgreSQL eklentisiyle): sunucu `localhost`, port `15432`,
